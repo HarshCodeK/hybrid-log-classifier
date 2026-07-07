@@ -1,1 +1,101 @@
-# Training dataset: 100 labeled log lines (20 per category)
+log_text,category
+"Multiple failed login attempts detected for user admin_42",Security Alert
+"Unauthorized access attempt blocked from IP 192.168.1.105",Security Alert
+"Suspicious file download detected by user jsmith",Security Alert
+"SQL injection attempt detected in request /search?id=1",Security Alert
+"Root login via SSH from unknown IP 203.0.113.45",Security Alert
+"Firewall rule violation detected on port 8443",Security Alert
+"Password change notification for inactive account",Security Alert
+"Brute force attack detected on admin panel",Security Alert
+"Cross-site scripting attempt blocked on contact form",Security Alert
+"Invalid JWT token presented in API request",Security Alert
+"Account takeover attempt detected for user sarah_connor",Security Alert
+"Malware signature detected in uploaded file report.pdf",Security Alert
+"Privilege escalation attempt by user guest_001",Security Alert
+"API rate limit exceeded by IP 10.0.0.87, possible DDoS",Security Alert
+"Certificate validation failed for endpoint api.internal.com",Security Alert
+"Port scan detected from external IP 45.33.32.156",Security Alert
+"Session hijacking attempt blocked at gateway",Security Alert
+"Data exfiltration alert: large outbound transfer to unknown host",Security Alert
+"Two-factor authentication failure for user mike_admin",Security Alert
+"Ransomware signature detected in network traffic",Security Alert
+"Memory usage at 87% on server node-12, threshold exceeded",Resource Usage
+"CPU utilization reached 95% on database cluster",Resource Usage
+"Disk space critical: /dev/sda1 at 92% capacity",Resource Usage
+"Network bandwidth at 850 Mbps, 80% of uplink capacity",Resource Usage
+"Connection pool exhausted on application server web-04",Resource Usage
+"Swap memory usage at 78%, performance degradation expected",Resource Usage
+"Inode usage at 94% on mail server volume",Resource Usage
+"Load average spike: 12.5 on node processing-queue",Resource Usage
+"GPU memory exhausted on training instance gpu-02",Resource Usage
+"File descriptor limit reached for process nginx",Resource Usage
+"Cache hit ratio dropped to 34% on Redis instance",Resource Usage
+"Disk I/O latency at 450ms on storage array",Resource Usage
+"Thread pool starvation detected in worker service",Resource Usage
+"JVM heap usage at 91%, garbage collection frequency increasing",Resource Usage
+"Power supply voltage fluctuation on rack A7",Resource Usage
+"Temperature sensor reading 78C on CPU core 3",Resource Usage
+"Database connection pool at 95% capacity on postgres-primary",Resource Usage
+"Outbound queue depth at 15000 messages, processing lag increasing",Resource Usage
+"Elasticsearch shard allocation failed due to insufficient disk",Resource Usage
+"Container memory limit reached on pod api-server-5",Resource Usage
+"Task queue processing failed for job ID 8823, retry limit reached",Workflow Error
+"Data pipeline crashed during ETL step at transform phase",Workflow Error
+"Order processing workflow failed at payment validation step",Workflow Error
+"Email notification service unreachable after 3 retries",Workflow Error
+"Backup job failed: database snapshot timeout after 300 seconds",Workflow Error
+"Scheduled report generation failed for report_id weekly-sales",Workflow Error
+"Webhook delivery to hooks.example.com failed with 503",Workflow Error
+"CI/CD pipeline halted at integration test suite",Workflow Error
+"File replication job failed between regions us-east and eu-west",Workflow Error
+"Database migration script v2.1.3 failed on column type conversion",Workflow Error
+"User registration workflow timed out during email verification",Workflow Error
+"Asset import pipeline crashed on malformed CSV row 452",Workflow Error
+"Certificate renewal job failed for domain app.example.com",Workflow Error
+"Data sync failed between CRM and ERP systems",Workflow Error
+"Index rebuild job failed on Elasticsearch cluster logs-2025",Workflow Error
+"Billing invoice generation failed for batch INV-2025-04",Workflow Error
+"Video transcoding job aborted on file large_event.mp4",Workflow Error
+"DNS propagation check failed after zone update",Workflow Error
+"Compliance scan job interrupted due to agent disconnection",Workflow Error
+"Reindexing operation failed on Solr collection products",Workflow Error
+"Function getUserData() is deprecated, use fetchUser() instead",Deprecation Warning
+"API v2 endpoint /api/users will be removed in next release",Deprecation Warning
+"DeprecationWarning: pandas DataFrame append is deprecated",Deprecation Warning
+"module 'crypto' is deprecated, use 'cryptography' instead",Deprecation Warning
+"MySQL 5.7 is end-of-life, upgrade to 8.0 recommended",Deprecation Warning
+"SSLv3 protocol support deprecated, enable TLS 1.2 minimum",Deprecation Warning
+"Build tool gulp 3.x is deprecated, migrate to version 4",Deprecation Warning
+"Python 3.8 reached end of life on 2024-10-01",Deprecation Warning
+"Method getOrCreate() is deprecated, use firstOrCreate()",Deprecation Warning
+"The /api/v1 routes are deprecated, migrate to /api/v2",Deprecation Warning
+"Docker Compose v1 is deprecated, use Compose v2 plugin",Deprecation Warning
+"Config key app.debug deprecated, use app.log_level",Deprecation Warning
+"Library libssl.so.1.0 is deprecated in Debian Bullseye",Deprecation Warning
+"Session variable auth deprecated, use token instead",Deprecation Warning
+"XML-RPC endpoint deprecated, use REST API instead",Deprecation Warning
+"Alert rule format v1 deprecated, see migration guide",Deprecation Warning
+"Traefik v1 middleware syntax deprecated in v2.x",Deprecation Warning
+"Node.js 16 is end-of-life, upgrade to 18 or 20",Deprecation Warning
+"Class Mage_Core_Model_Abstract deprecated in Magento 2.4",Deprecation Warning
+"Ansible syntax include is deprecated, use import_tasks",Deprecation Warning
+"User jdoe logged in from Chrome on Windows 10",Unknown
+"Configuration file reloaded successfully for service nginx",Unknown
+"Health check passed for service api-gateway",Unknown
+"New SSL certificate generated for domain example.org",Unknown
+"Cache cleared for namespace user_profiles",Unknown
+"DNS record A updated for host app.example.com",Unknown
+"Rate limit counter reset for API key abc123",Unknown
+"Admin user updated notification preferences",Unknown
+"Database query completed in 23ms on replica-2",Unknown
+"Webhook registered at hooks.example.com",Unknown
+"User session expired after 30 minutes of inactivity",Unknown
+"Service discovery registered instance web-03 at 10.0.0.42",Unknown
+"Audit log archived for month 2025-03",Unknown
+"Load balancer added backend server node-07",Unknown
+"Feature flag new_checkout enabled for 50 percent of users",Unknown
+"CloudFront distribution deployed with ID E123ABC",Unknown
+"Metrics export to Prometheus completed for cycle 142",Unknown
+"Container image pulled alpine 3.18 with 15 layers",Unknown
+"TLS handshake completed with upstream backend",Unknown
+"Index optimization vacated 1.2 GB in logs-2025 index",Unknown

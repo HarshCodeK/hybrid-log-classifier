@@ -1,1 +1,16 @@
-# Test dataset: 15 unlabeled log lines for evaluation
+log_text
+"Abnormal traffic pattern detected from IP range 10.0.0.0/24, possible reconnaissance"
+"Disk read latency exceeded 200ms on volume vol-abc123 for 5 consecutive minutes"
+"Deployment rollback triggered for release v2.4.1 due to failed health checks"
+"Function getOldConfig() is deprecated, please migrate to fetchConfig()"
+"Container restart detected for pod monitoring-agent in namespace observability"
+"Access denied to restricted endpoint /admin/settings for user guest_user"
+"Python module 'distutils' is deprecated in Python 3.12, use setuptools instead"
+"Data export job EXP-8873 failed during compression phase"
+"Heap memory usage rising steadily on service recommendation-engine"
+"SSL certificate for site example.org expires in 7 days"
+"Unauthorized SSH key added to authorized_keys for user root"
+"Batch processing pipeline stalled due to upstream API rate limiting"
+"Environment variable DATABASE_URL is deprecated, use DB_CONNECTION_STRING"
+"Cache eviction rate above 60% suggesting insufficient memory allocation"
+"User report says the dashboard is loading slowly today"
