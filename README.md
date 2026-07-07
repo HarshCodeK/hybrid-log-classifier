@@ -75,7 +75,7 @@ curl -X POST http://localhost:8000/classify \
 ### 4. Run the Streamlit UI
 
 ```bash
-streamlit run app.py
+python -m streamlit run app.py
 ```
 
 Opens a browser tab where you can type a log line or upload a CSV.
