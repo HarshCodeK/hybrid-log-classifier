@@ -61,7 +61,7 @@ Saves `models/classifier.pkl` and `models/label_encoder.pkl`.
 ### 3. Run the API
 
 ```bash
-uvicorn api.main:app --reload
+python -m uvicorn api.main:app --reload
 ```
 
 Then send a log line:
@@ -79,6 +79,27 @@ streamlit run app.py
 ```
 
 Opens a browser tab where you can type a log line or upload a CSV.
+
+## Try these examples
+
+Copy-paste any of these into the Streamlit text box to see what happens:
+
+| Log line | Expected category | Tier |
+|---|---|---|
+| `Multiple failed login attempts detected for user admin_42` | Security Alert | regex |
+| `IP 192.168.1.105 blocked due to potential attack` | Security Alert | regex |
+| `Authentication failure for user root from IP 10.0.0.1` | Security Alert | llm |
+| `Memory usage at 87% on server node-12, threshold exceeded` | Resource Usage | regex |
+| `Disk space critical: /dev/sda1 at 92% capacity` | Resource Usage | regex |
+| `Cache hit ratio dropped to 34% on Redis instance` | Resource Usage | ml |
+| `Task queue processing failed for job ID 8823` | Workflow Error | regex |
+| `Data pipeline crashed during ETL step at transform phase` | Workflow Error | regex |
+| `Container restart detected for pod monitoring-agent` | Workflow Error | llm |
+| `Function getUserData() is deprecated, use fetchUser()` | Deprecation Warning | regex |
+| `Python module distutils is deprecated in Python 3.12` | Deprecation Warning | regex |
+| `SSL certificate for site example.org expires in 7 days` | Security Alert | llm |
+| `Health check passed for service api-gateway` | Unknown | regex |
+| `User says the app feels slow today` | Unknown | llm |
 
 ## Worked example
 
