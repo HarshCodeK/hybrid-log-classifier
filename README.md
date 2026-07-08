@@ -1,7 +1,5 @@
 # Hybrid Log Classifier
 
-![Project Screenshot](../image.png)
-
 A log classification system that sorts log messages into 5 categories:
 **Security Alert**, **Resource Usage**, **Workflow Error**, **Deprecation Warning**, and **Unknown**.
 
