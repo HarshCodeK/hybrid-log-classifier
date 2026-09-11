@@ -1,10 +1,19 @@
 import os
-from dotenv import load_dotenv
-from groq import Groq
-
 from src.config import CATEGORIES
 
-load_dotenv()
+load_dotenv = None  # lazy: python-dotenv optional at import time
+
+
+def _load_env():
+    global load_dotenv
+    if load_dotenv is None:
+        try:
+            from dotenv import load_dotenv as _ld
+            load_dotenv = _ld
+        except ImportError:
+            load_dotenv = False
+    if load_dotenv:
+        load_dotenv()
 
 _GROQ_PROMPT = f"""
 You are a log classifier. Classify the given log line into exactly one of these categories:
@@ -20,9 +29,12 @@ Respond with ONLY the category name. No explanation, no punctuation.
 
 
 def classify_llm(text: str) -> str:
+    _load_env()
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise ValueError("GROQ_API_KEY not found in .env file")
+
+    from groq import Groq  # lazy: only needed when tier 3 actually fires
 
     client = Groq(api_key=api_key)
     response = client.chat.completions.create(

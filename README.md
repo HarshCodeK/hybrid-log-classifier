@@ -80,6 +80,15 @@ python -m streamlit run app.py
 
 Opens a browser tab where you can type a log line or upload a CSV.
 
+### 5. Run the offline test suite
+
+```bash
+python -m pytest tests/ -q
+```
+
+No API key or network needed — regex tier, SQLite logging, API boot, and
+graceful LLM-tier fallback are all covered.
+
 ## Try these examples
 
 Copy-paste any of these into the Streamlit text box to see what happens:
