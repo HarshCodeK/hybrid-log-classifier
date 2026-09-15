@@ -1,3 +1,5 @@
+> **Archived 2026-09.** A learning slice: practice in tiered regex to ML to LLM classification, built in a single session. Superseded by [regent](https://github.com/HarshCodeK/regent) - the AI control plane, where the same pipeline idea now has tests, CI, an append-only ledger and measured numbers. Kept for history, not presented as portfolio work.
+
 # Hybrid Log Classifier
 
 A log classification system that sorts log messages into 5 categories:
