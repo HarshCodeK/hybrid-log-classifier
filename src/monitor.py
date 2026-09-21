@@ -26,6 +26,7 @@ def init_db():
 
 
 def log_result(log_text, category, tier_used, confidence, latency_ms):
+    init_db()
     import datetime
     conn = _get_conn()
     conn.execute(
@@ -37,6 +38,7 @@ def log_result(log_text, category, tier_used, confidence, latency_ms):
 
 
 def get_tier_counts():
+    init_db()
     conn = _get_conn()
     rows = conn.execute("SELECT tier_used, COUNT(*) FROM logs GROUP BY tier_used").fetchall()
     conn.close()
