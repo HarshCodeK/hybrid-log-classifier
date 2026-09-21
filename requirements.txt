@@ -1,6 +1,5 @@
 scikit-learn
 pandas
-sentence-transformers
 fastapi
 uvicorn
 streamlit
