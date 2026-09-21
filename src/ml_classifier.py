@@ -6,7 +6,6 @@ when the model isn't trained or the libs aren't installed.
 """
 import os
 import joblib
-import pandas as pd
 from src.config import ML_CONFIDENCE_THRESHOLD
 
 MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models")
@@ -40,6 +39,7 @@ def _load_artifacts():
 
 
 def train_model():
+    import pandas as pd
     from sklearn.linear_model import LogisticRegression
     from sklearn.model_selection import train_test_split
     from sklearn.metrics import classification_report

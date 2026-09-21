@@ -1,4 +1,12 @@
 import re
+import os
+
+# Auto-load .env so the pipeline finds GROQ_API_KEY without manual setup
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 CATEGORIES = [
     "Security Alert",

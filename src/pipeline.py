@@ -1,5 +1,4 @@
 import time
-import pandas as pd
 import os
 
 from src.regex_classifier import classify_regex
@@ -41,6 +40,7 @@ def classify_log(text: str) -> dict:
 
 
 if __name__ == "__main__":
+    import pandas as pd
     unseen_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "unseen_logs.csv")
     df = pd.read_csv(unseen_path)
     for text in df["log_text"]:
