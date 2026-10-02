@@ -2,6 +2,8 @@
 
 Run:  uvicorn src.api:app --reload     then open http://localhost:8000/docs
 """
+from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 from fastapi import FastAPI
@@ -15,7 +17,7 @@ app = FastAPI(title="Hybrid Log Classifier", version="1.0.0")
 
 class Line(BaseModel):
     text: str = Field(..., min_length=1, max_length=2000)
-    timestamp: str | None = None
+    timestamp: datetime | None = None
 
 
 class Batch(BaseModel):
