@@ -1,0 +1,14 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+*.db
+logs.db
+.pytest_cache/
+
+# Java build output
+java/target/
+
+# Cross-check artefacts
+java.json
+demo.log
