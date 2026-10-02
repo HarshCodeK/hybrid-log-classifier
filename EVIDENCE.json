@@ -53,7 +53,7 @@
     },
     {
       "metric": "llm tier live call",
-      "value": "Resource Usage, \\.000115",
+      "value": "Resource Usage, $0.000115",
       "command": "from src.pipeline import classify_one; classify_one(ambiguous_line)"
     }
   ],
