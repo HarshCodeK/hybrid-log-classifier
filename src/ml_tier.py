@@ -91,18 +91,24 @@ def train(csv_path: str, min_accuracy: float = 0.55):
     honest = sum(scores) / len(scores)
 
     print(f"random split accuracy : {leaky:.3f}  <- LEAKY, siblings on both sides")
-    print(f"template-grouped      : {honest:.3f}  <- the real number")
+    print(f"template-grouped      : {honest:.3f}  <- the validation number to quote")
     print()
     print(classification_report(yte, clf_a.predict(Xte), target_names=le.classes_, digits=3, zero_division=0))
     if honest < min_accuracy:
         print(f"WARNING: {honest:.3f} is below {min_accuracy}. The dataset, not the")
         print("model, is the limit here -- do not quote the random-split number.")
 
+    # Final deployment artifact: after honest grouped CV, retrain on all available
+    # training rows. Evaluation stays group-safe; deployment uses all data.
+    final_vec = TfidfVectorizer(ngram_range=(1, 2))
+    X_all = final_vec.fit_transform(X_text)
+    final_clf = LogisticRegression(max_iter=1000).fit(X_all, y)
+
     here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     out = os.path.join(here, "models")
     os.makedirs(out, exist_ok=True)
-    joblib.dump(clf_a, os.path.join(out, "classifier.pkl"))
-    joblib.dump(vec, os.path.join(out, "vectorizer.pkl"))
+    joblib.dump(final_clf, os.path.join(out, "classifier.pkl"))
+    joblib.dump(final_vec, os.path.join(out, "vectorizer.pkl"))
     joblib.dump(le, os.path.join(out, "labels.pkl"))
-    print(f"saved model to {out}")
+    print(f"saved full-data deployment model to {out}")
     return leaky, honest
