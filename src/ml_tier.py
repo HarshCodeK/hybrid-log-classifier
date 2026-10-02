@@ -81,13 +81,16 @@ def train(csv_path: str, min_accuracy: float = 0.55):
 
     # --- the number that means something (grouped by template) ---
     groups = df["template_id"] if "template_id" in df.columns else pd.Series(range(len(df)))
-    vec = TfidfVectorizer(ngram_range=(1, 2))
-    X = vec.fit_transform(X_text)
     gkf = GroupKFold(n_splits=5)
     scores = []
-    for tr, te in gkf.split(X, y, groups):
-        m = LogisticRegression(max_iter=1000).fit(X[tr], y[tr])
-        scores.append(accuracy_score(y[te], m.predict(X[te])))
+    for tr, te in gkf.split(X_text, y, groups):
+        # Fit TF-IDF only on the training fold. Fitting IDF on all rows would
+        # leak test-fold statistics even though the classifier sees no labels.
+        fold_vec = TfidfVectorizer(ngram_range=(1, 2))
+        Xtr_text = fold_vec.fit_transform(X_text.iloc[tr])
+        Xte_text = fold_vec.transform(X_text.iloc[te])
+        m = LogisticRegression(max_iter=1000).fit(Xtr_text, y[tr])
+        scores.append(accuracy_score(y[te], m.predict(Xte_text)))
     honest = sum(scores) / len(scores)
 
     print(f"random split accuracy : {leaky:.3f}  <- LEAKY, siblings on both sides")
