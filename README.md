@@ -54,19 +54,12 @@ unmatched lines come back as `Unknown`.
 
 ---
 
-## Accuracy: quote 0.833, not 1.000
+## Accuracy: grouped validation, not a leaky random split
 
-```
-random split accuracy : 1.000   <- LEAKY
-template-grouped      : 0.833   <- the validation number to quote
-```
 
-The training data contains 31 templates with repeated phrasings. A random split puts
-near-identical rows on both sides, so the model scores near-perfectly by
-recognising strings it has already seen. Holding out whole templates measures
-how it behaves on phrasings it has not met.
+The training data contains 31 templates with repeated phrasings. A random split can put near-identical rows on both sides, so its score is a leakage contrast, not a generalisation estimate. Grouped validation holds out entire `template_id` groups. The vectorizer is also fit separately inside each validation fold so held-out TF-IDF statistics do not leak into training.
 
-`train.py` prints both, uses grouped CV for the validation figure, and then trains the deployment artifact on all available rows. **Quote 0.833 as the grouped-validation figure.**
+`train.py` prints the random-split contrast and the leakage-free grouped-validation figure, then retrains the deployment artifact on all available rows. Run `python train.py` before quoting the current grouped-validation number.
 
 Anyone can check this in ten lines, which is why it is worth saying out loud.
 
@@ -139,7 +132,7 @@ interviewer will actually ask, with answers grounded in this code.
 
 ## Known limits
 
-- **The ML tier is weak on unseen phrasings** (0.833, and the categories are
+- **The ML tier is weak on unseen phrasings** (the current grouped-validation score is produced by `python train.py`; the dataset is small, and the categories are
   unevenly represented). The binding constraint is the 31-template dataset, not
   the model. Real log data would fix it; a different classifier would not.
 - **Entity extraction covers four kinds** — user, IP, host, service. Real logs
