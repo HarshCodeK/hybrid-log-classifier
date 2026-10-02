@@ -1,0 +1,61 @@
+{
+  "repo": "hybrid-log-classifier",
+  "tier": "A",
+  "domain": "three-tier log classification / incident grouping",
+  "gate": {
+    "tests_passed": 27,
+    "tests_failed": 0,
+    "pytest_exit": 0,
+    "ci": "green",
+    "docker": "built and health-checked in CI",
+    "note": "LLM tier verified live against Groq with a production model id (openai/gpt-oss-120b); the previous default was flagged preview in docs."
+  },
+  "headline": [
+    {
+      "label": "tests passing",
+      "value": "27 + 14 Java",
+      "command": "python -m pytest tests/ -q; cd java && mvn test",
+      "tone": "accent"
+    },
+    {
+      "label": "ML accuracy (honest)",
+      "value": "0.833",
+      "command": "python train.py",
+      "tone": "info"
+    },
+    {
+      "label": "random-split (leaky)",
+      "value": "1.000",
+      "command": "python train.py",
+      "tone": ""
+    }
+  ],
+  "rows": [
+    {
+      "metric": "python tests",
+      "value": 27,
+      "command": "python -m pytest tests/ -q"
+    },
+    {
+      "metric": "java tests",
+      "value": 14,
+      "command": "cd java && mvn test"
+    },
+    {
+      "metric": "template-grouped accuracy",
+      "value": 0.833,
+      "command": "python train.py"
+    },
+    {
+      "metric": "java/python agreement",
+      "value": "6 incidents",
+      "command": "CI cross-check step"
+    },
+    {
+      "metric": "llm tier live call",
+      "value": "Resource Usage, \\.000115",
+      "command": "from src.pipeline import classify_one; classify_one(ambiguous_line)"
+    }
+  ],
+  "source": "measured 2026-10-03"
+}

@@ -1,0 +1,83 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install -r requirements.txt
+      # No API key on purpose: every test must pass with the LLM tier off.
+      - run: python -m pytest tests/ -q
+
+  # The Java first-pass classifier. Runs here because there is no JDK on the
+  # development machine -- which means "Java is on my resume" would otherwise be
+  # an unverified claim. This job is what makes it true.
+  java:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: java
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - name: Build and test
+        run: mvn -q --batch-mode test
+      # One step, not several: the log file has to exist before both
+      # implementations read it, and splitting that across steps makes the job
+      # depend on runner state nobody is looking at.
+      - name: Cross-check Java against the Python pipeline
+        run: |
+          mvn -q --batch-mode package -DskipTests
+          python3 -c "
+          import json
+          lines = json.load(open('../data/demo_batch.json'))['lines']
+          open('../demo.log','w').write('\n'.join(lines))
+          "
+          java -cp target/classes logtriage.LogTriage ../demo.log --json > ../java.json
+          python3 -m pip install --quiet -r ../requirements.txt
+          PYTHONPATH=.. python3 -c "
+          import json, sys
+          from src.pipeline import classify_batch
+          lines = json.load(open('../data/demo_batch.json'))['lines']
+          py = classify_batch([(l, None) for l in lines], allow_llm=False)
+          jv = json.load(open('../java.json'))
+          py_ids = [(i['category'], i['line_count']) for i in py['incidents']]
+          jv_ids = [(i['category'], i['line_count']) for i in jv['incidents']]
+          assert py['total_lines'] == jv['total_lines'], 'line counts differ'
+          assert py_ids == jv_ids, 'incidents differ: python=%s java=%s' % (py_ids, jv_ids)
+          print('both implementations agree on', len(py_ids), 'incidents')
+          print(py_ids)
+          "
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: false
+          load: true
+          tags: hlc:test
+      - name: Start it and check /health
+        run: |
+          docker run -d --name hlc -p 8000:8000 hlc:test
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8000/health; then exit 0; fi
+            sleep 3
+          done
+          docker logs hlc; exit 1
