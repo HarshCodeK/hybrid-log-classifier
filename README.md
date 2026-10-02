@@ -36,7 +36,7 @@ know" is what makes routing worth anything.
 ```bash
 pip install -r requirements.txt
 cp .env.example .env          # add your GROQ_API_KEY (optional)
-python train.py               # trains the ML tier, prints both accuracies
+python train.py               # evaluates grouped CV, then trains the deployment artifact
 streamlit run app.py          # UI at http://localhost:8501
 ```
 
@@ -58,15 +58,15 @@ unmatched lines come back as `Unknown`.
 
 ```
 random split accuracy : 1.000   <- LEAKY
-template-grouped      : 0.833   <- the real number
+template-grouped      : 0.833   <- the validation number to quote
 ```
 
-The training data is 31 templates each written three times. A random split puts
+The training data contains 31 templates with repeated phrasings. A random split puts
 near-identical rows on both sides, so the model scores near-perfectly by
 recognising strings it has already seen. Holding out whole templates measures
 how it behaves on phrasings it has not met.
 
-`train.py` prints both and labels the flattering one as leakage. **Quote 0.833.**
+`train.py` prints both, uses grouped CV for the validation figure, and then trains the deployment artifact on all available rows. **Quote 0.833 as the grouped-validation figure.**
 
 Anyone can check this in ten lines, which is why it is worth saying out loud.
 
@@ -93,8 +93,9 @@ Measured on `data/demo_batch.json` (11 lines):
 ```
 
 6 incidents, not 5: the two Workflow Error lines mention no shared entity, so
-the grouping rule keeps them apart. 10 of 11 lines answered by regex. Cost
-avoided: 100%.
+the grouping rule keeps them apart. In the included 11-line demo, 10 lines were
+answered by regex and no line reached the LLM tier; the 100% cost-avoided figure
+is specific to that demo batch, not a general production claim.
 
 ---
 
