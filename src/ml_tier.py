@@ -52,10 +52,9 @@ def train(csv_path: str, min_accuracy: float = 0.55):
     """Train on the CSV and print two accuracy numbers.
 
     Two numbers, because the flattering one is misleading here. The training
-    data is 138 templates each written three times, so a random split puts
-    near-identical rows on both sides and the model scores near-perfectly by
-    recognising strings it has seen. Holding out whole templates is the honest
-    measure of how it behaves on unseen phrasings.
+    data contains repeated phrasings, so a random split can put near-identical
+    rows on both sides. Holding out whole templates is the honest measure of how
+    it behaves on unseen phrasings.
     """
     import joblib
     import pandas as pd
