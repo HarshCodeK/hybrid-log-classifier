@@ -14,16 +14,14 @@ need it."
 
 ## Q: Why three tiers instead of one model?
 
-A: Cost, latency, and certainty trade differently per line. Roughly 70-90% of
-lines in these logs contain a keyword ("failed login") that makes the answer
-deterministic — paying a model for those is waste. The middle tier covers
+A: Cost, latency, and certainty trade differently per line. Many demo lines contain recognizable operational patterns that regex can classify deterministically; the exact percentage is demo-specific, not a production workload assumption. The middle tier covers
 common phrasings for free. The LLM is the expensive, slow, probabilistic tier,
 so it should see the least traffic. In the demo, 10 of 11 lines never left the
 regex tier and cost avoided was 100%.
 
 ## Q: What is abstention and why does it matter?
 
-A: When the ML tier's confidence is below 0.60 it returns `(None, confidence)`
+A: When the ML tier's confidence is below the configured 0.60 threshold it returns `(None, confidence)`
 instead of its best guess. If every tier always answered, some answers would be
 guesses, and you could never tell which ones were earned — the cost-saving
 claim would be unverifiable. The abstain path ends in `tier="none"` ->
@@ -42,12 +40,9 @@ logistic regression is the honest minimum that works.
 
 ## Q: Your ML accuracy is 0.833 — walk me through why not 1.0.
 
-A: The dataset is 31 templates, each written three times with different values.
+A: The dataset has 31 template groups with repeated examples.
 A random train/test split puts near-identical rows in both sets, so the model
-memorises strings and scores 1.000 — that is data leakage. Grouping by
-`template_id` (GroupKFold) forces the model to generalise to phrasings it has
-never seen; the real number is 0.833. `train.py` prints both and labels the
-flattering one as leaky. If an interviewer asks only one number, say 0.833.
+memorises strings and scores 1.000 — that is data leakage. Grouping by `template_id` (GroupKFold) forces generalisation to held-out template groups. The vectorizer is fit inside each fold too, so held-out TF-IDF statistics do not leak into training. Run `python train.py` and quote the current grouped-validation figure; do not rely on an older README number.
 
 ## Q: Why TF-IDF when you claim "embeddings" elsewhere on your resume?
 
@@ -135,3 +130,8 @@ grouping (entity+window rule), timestamps, API contract, and the Java shape
 contract. No test hits the network; LLM behaviour is tested through fakes. The
 docs are not excluded: README numbers and the demo batch are re-derived from the
 code, so a stale README fails the suite — documentation that lies is a bug.
+
+
+## Q: Why 0.60 for the abstention threshold?
+
+A: 0.60 is a simple explicit engineering threshold, not a tuned optimum. The repository does not contain a separate threshold-sweep experiment, so I would not claim that 0.60 is statistically optimal. On a larger labeled log set, I would measure coverage, false-positive rate, and downstream LLM spend across thresholds and choose from that tradeoff.
