@@ -140,3 +140,7 @@ interviewer will actually ask, with answers grounded in this code.
 - **Batch processing is serial.** Fine at demo scale.
 - **Cost figures are estimates**, from token counts returned by the provider.
   Accurate enough to compare tiers; not billing reconciliation.
+
+## License
+
+MIT.
