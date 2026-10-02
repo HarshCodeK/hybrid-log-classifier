@@ -1,0 +1,16 @@
+{
+  "source": "demo",
+  "lines": [
+    "[2026-09-30 02:14:01] Multiple failed login attempts detected for user admin_42",
+    "[2026-09-30 02:14:09] Failed login for user admin_42 from ip 203.0.113.7",
+    "[2026-09-30 02:14:33] Authentication failure for user admin_42 from ip 203.0.113.7",
+    "[2026-09-30 02:14:50] Access denied for user admin_42",
+    "[2026-09-30 02:16:44] Failed login for user admin_42 from ip 203.0.113.9",
+    "[2026-09-30 08:40:00] Memory usage at 94% on server node-12, threshold exceeded",
+    "[2026-09-30 08:41:12] Memory usage at 96% on server node-12",
+    "[2026-09-30 11:02:10] Deprecation warning: legacy_auth is deprecated, removed in v3",
+    "[2026-09-30 11:45:22] ETL job weekly_export failed: connection reset by peer",
+    "[2026-09-30 11:45:59] Job weekly_export failed after 3 retries",
+    "[2026-09-30 12:10:00] Health check passed for node-07"
+  ]
+}

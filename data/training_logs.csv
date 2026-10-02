@@ -1,0 +1,94 @@
+template_id,category,log_text
+31,Unknown,Config reloaded for service api-gateway
+16,Resource Usage,Threshold exceeded: memory on node-12 at 91 percent
+26,Workflow Error,Scheduled task weekly_export terminated unexpectedly
+11,Resource Usage,CPU usage at 88% on node-12
+10,Resource Usage,Memory usage at 96% on server node-12
+19,Deprecation Warning,"Using deprecated legacy_auth, migrate to the new interface"
+6,Security Alert,Repeated authentication failure for user admin_42 from ip 203.0.113.7
+5,Security Alert,Unauthorised access attempt on account admin_42
+2,Security Alert,Failed login for user admin_42 from ip 203.0.113.7
+12,Resource Usage,Disk usage at 97% on server node-12
+16,Resource Usage,Threshold exceeded: memory on node-12 at 97 percent
+13,Resource Usage,"Disk nearly full on node-12, 91% used"
+24,Workflow Error,Unhandled exception in weekly_export: NullPointerException
+28,Unknown,Service api-gateway started successfully
+3,Security Alert,Authentication failure for user admin_42 from ip 203.0.113.7
+8,Security Alert,Access denied for user admin_42 from ip 203.0.113.7
+18,Deprecation Warning,legacy_auth is deprecated and will be removed in the next release
+5,Security Alert,Unauthorised access attempt on account admin_42
+11,Resource Usage,CPU usage at 88% on node-12
+28,Unknown,Service api-gateway started successfully
+1,Security Alert,Multiple failed login attempts detected for user admin_42
+7,Security Alert,Brute force protection triggered for user admin_42 from ip 203.0.113.7
+29,Unknown,Cache warmed for api-gateway
+19,Deprecation Warning,"Using deprecated legacy_auth, migrate to the new interface"
+17,Deprecation Warning,"Deprecation warning: legacy_auth is deprecated, removed in v3"
+2,Security Alert,Failed login for user admin_42 from ip 203.0.113.7
+21,Workflow Error,ETL job weekly_export failed: connection reset by peer
+29,Unknown,Cache warmed for api-gateway
+7,Security Alert,Brute force protection triggered for user admin_42 from ip 203.0.113.7
+23,Workflow Error,Timeout while running workflow weekly_export
+18,Deprecation Warning,legacy_auth is deprecated and will be removed in the next release
+27,Unknown,Health check passed for node-12
+14,Resource Usage,Out of memory on node-12 while processing batch job
+13,Resource Usage,"Disk nearly full on node-12, 97% used"
+7,Security Alert,Brute force protection triggered for user admin_42 from ip 203.0.113.7
+23,Workflow Error,Timeout while running workflow weekly_export
+15,Resource Usage,Cache eviction failed on node-12
+23,Workflow Error,Timeout while running workflow weekly_export
+1,Security Alert,Multiple failed login attempts detected for user admin_42
+14,Resource Usage,Out of memory on node-12 while processing batch job
+22,Workflow Error,Job weekly_export failed after 3 retries
+26,Workflow Error,Scheduled task weekly_export terminated unexpectedly
+30,Unknown,Heartbeat received from node-12
+21,Workflow Error,ETL job weekly_export failed: connection reset by peer
+4,Security Alert,Access denied for user admin_42
+25,Workflow Error,Workflow weekly_export timed out after 300s
+9,Resource Usage,"Memory usage at 91% on server node-12, threshold exceeded"
+15,Resource Usage,Cache eviction failed on node-12
+8,Security Alert,Access denied for user admin_42 from ip 203.0.113.7
+9,Resource Usage,"Memory usage at 88% on server node-12, threshold exceeded"
+31,Unknown,Config reloaded for service api-gateway
+27,Unknown,Health check passed for node-12
+30,Unknown,Heartbeat received from node-12
+24,Workflow Error,Unhandled exception in weekly_export: NullPointerException
+18,Deprecation Warning,legacy_auth is deprecated and will be removed in the next release
+29,Unknown,Cache warmed for api-gateway
+19,Deprecation Warning,"Using deprecated legacy_auth, migrate to the new interface"
+6,Security Alert,Repeated authentication failure for user admin_42 from ip 203.0.113.7
+12,Resource Usage,Disk usage at 94% on server node-12
+9,Resource Usage,"Memory usage at 97% on server node-12, threshold exceeded"
+10,Resource Usage,Memory usage at 97% on server node-12
+4,Security Alert,Access denied for user admin_42
+2,Security Alert,Failed login for user admin_42 from ip 203.0.113.7
+24,Workflow Error,Unhandled exception in weekly_export: NullPointerException
+22,Workflow Error,Job weekly_export failed after 3 retries
+17,Deprecation Warning,"Deprecation warning: legacy_auth is deprecated, removed in v3"
+11,Resource Usage,CPU usage at 91% on node-12
+6,Security Alert,Repeated authentication failure for user admin_42 from ip 203.0.113.7
+27,Unknown,Health check passed for node-12
+10,Resource Usage,Memory usage at 97% on server node-12
+28,Unknown,Service api-gateway started successfully
+31,Unknown,Config reloaded for service api-gateway
+5,Security Alert,Unauthorised access attempt on account admin_42
+8,Security Alert,Access denied for user admin_42 from ip 203.0.113.7
+16,Resource Usage,Threshold exceeded: memory on node-12 at 97 percent
+20,Deprecation Warning,Deprecation notice for legacy_auth -- scheduled for removal
+1,Security Alert,Multiple failed login attempts detected for user admin_42
+15,Resource Usage,Cache eviction failed on node-12
+17,Deprecation Warning,"Deprecation warning: legacy_auth is deprecated, removed in v3"
+13,Resource Usage,"Disk nearly full on node-12, 96% used"
+20,Deprecation Warning,Deprecation notice for legacy_auth -- scheduled for removal
+25,Workflow Error,Workflow weekly_export timed out after 300s
+14,Resource Usage,Out of memory on node-12 while processing batch job
+3,Security Alert,Authentication failure for user admin_42 from ip 203.0.113.7
+30,Unknown,Heartbeat received from node-12
+21,Workflow Error,ETL job weekly_export failed: connection reset by peer
+12,Resource Usage,Disk usage at 91% on server node-12
+4,Security Alert,Access denied for user admin_42
+3,Security Alert,Authentication failure for user admin_42 from ip 203.0.113.7
+20,Deprecation Warning,Deprecation notice for legacy_auth -- scheduled for removal
+25,Workflow Error,Workflow weekly_export timed out after 300s
+22,Workflow Error,Job weekly_export failed after 3 retries
+26,Workflow Error,Scheduled task weekly_export terminated unexpectedly
