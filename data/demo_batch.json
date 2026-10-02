@@ -1,0 +1,19 @@
+{
+  "source": "demo",
+  "lines": [
+    "[2026-09-30 02:14:01] Multiple failed login attempts detected for user admin_42",
+    "[2026-09-30 02:14:09] Failed login for user admin_42 from ip 203.0.113.7",
+    "[2026-09-30 02:14:33] Authentication failure for user admin_42 from ip 203.0.113.7",
+    "[2026-09-30 02:14:50] Access denied for user admin_42",
+    "[2026-09-30 02:16:44] Failed login for user admin_42 from ip 203.0.113.9",
+    "[2026-09-30 08:40:00] Memory usage at 94% on server node-12, threshold exceeded",
+    "[2026-09-30 08:41:12] Memory usage at 96% on server node-12",
+    "[2026-09-30 08:42:30] Out of memory error in worker on node-12",
+    "[2026-09-30 09:00:00] Health check passed for service api-gateway",
+    "[2026-09-30 09:00:05] Request served from cache in 12ms",
+    "[2026-09-30 09:05:00] Function getUserData() is deprecated, use fetchUser()",
+    "[2026-09-30 09:06:00] Data pipeline crashed during ETL step",
+    "[2026-09-30 09:07:00] Nginx returned 502 to the upstream",
+    "[2026-09-30 09:08:00] Disk is nearly full on the log volume"
+  ]
+}

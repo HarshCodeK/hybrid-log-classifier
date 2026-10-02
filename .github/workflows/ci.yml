@@ -1,0 +1,61 @@
+name: ci
+
+# Answers two questions: does the code work (pytest, offline), and does the
+# Dockerfile work (a real build — the only way to know, since a Dockerfile
+# nobody has built is a guess).
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      # No API key is set here on purpose: the whole suite must pass offline.
+      - name: Train + report accuracy
+        run: python train.py
+      - name: Tests (offline)
+        run: python -m pytest tests/ -q
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build the image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: hlc:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Start it and check the health endpoint
+        run: |
+          docker run -d --name hlc -p 8000:8000 hlc:test
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8000/health; then
+              echo "healthy"; exit 0
+            fi
+            sleep 5
+          done
+          docker logs hlc; exit 1
+      - name: Container logs on failure
+        if: failure()
+        run: docker logs hlc || true

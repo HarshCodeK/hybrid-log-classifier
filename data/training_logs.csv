@@ -1,0 +1,241 @@
+log_text,category
+"Container restart detected for pod worker-7",Workflow Error
+"New engineer joined the payments team",Unknown
+"Session hijack detected for user test_user from 10.0.0.1",Security Alert
+"Load average above normal on cache-03",Resource Usage
+"Cache warmed for worker-7 across all regions",Unknown
+"Latency looks a bit high this morning",Unknown
+"Data exfiltration attempt from db-01",Security Alert
+"Deploy of payments finished successfully",Unknown
+"Legacy auth flow is no longer supported",Deprecation Warning
+"Uncaught exception in service api-gateway",Workflow Error
+"Request served from cache in 12ms",Unknown
+"Deployment of payments failed validation",Workflow Error
+"API v1 endpoint /legacy is deprecated, migrate to v2",Deprecation Warning
+"Suspicious login pattern for account root",Security Alert
+"Deprecation warning: default codec will change",Deprecation Warning
+"Heap usage at 94% for service checkout",Resource Usage
+"Method getValue() is superseded by value()",Deprecation Warning
+"Account takeover in progress for user deploy_bot",Security Alert
+"Support for TLS 1.0 will be retired next month",Deprecation Warning
+"Load average above normal on billing",Resource Usage
+"File descriptor limit reached on billing",Resource Usage
+"Deadlock detected on table orders in worker-7",Workflow Error
+"Data exfiltration attempt from checkout",Security Alert
+"Disk space critical: /dev/sda1 at 94% capacity",Resource Usage
+"Pipeline crash in stage extract for web-frontend",Workflow Error
+"Feature request filed: add dark mode",Unknown
+"Docs updated for the onboarding guide",Unknown
+"Memory usage at 95% on server worker-7, threshold exceeded",Resource Usage
+"ETL job 9931 crashed on write",Workflow Error
+"Authentication failure for user jsmith from ip 203.0.113.7",Security Alert
+"This feature will be removed in the next release",Deprecation Warning
+"Sunset date announced for db-01 v1 API",Deprecation Warning
+"Old signing algorithm is deprecated, use RS256",Deprecation Warning
+"Firewall violation: ip 192.168.99.13 blocked",Security Alert
+"CPU utilization reached 92% on host node-12",Resource Usage
+"Bandwidth saturated at 97% on web-frontend",Resource Usage
+"File descriptor limit reached on db-01",Resource Usage
+"Workflow cache-03 aborted unexpectedly",Workflow Error
+"Timeout after 30s waiting for payments",Workflow Error
+"Job 60012 failed after 3 retries",Workflow Error
+"Workflow checkout aborted unexpectedly",Workflow Error
+"File descriptor limit reached on cache-03",Resource Usage
+"Connection pool exhausted on service web-frontend",Resource Usage
+"Parameter 'verbose' is deprecated, use log_level instead",Deprecation Warning
+"Deployment of cache-03 failed validation",Workflow Error
+"Cron job 2281 uses a deprecated schedule format",Deprecation Warning
+"Task queue processing failed for job 8823",Workflow Error
+"Certificate validation failed for host db-01",Security Alert
+"Privilege escalation attempt by user kiran",Security Alert
+"Python module distutils is deprecated in Python 3.12",Deprecation Warning
+"Invalid credentials supplied for user maria",Security Alert
+"Swap memory pressure detected on checkout",Resource Usage
+"Swap memory pressure detected on billing",Resource Usage
+"Support for TLS 1.0 will be retired next month",Deprecation Warning
+"Method getValue() is superseded by value()",Deprecation Warning
+"Access denied for user test_user on admin panel",Security Alert
+"Quarterly report generated for cache-03",Unknown
+"end-of-life notice for cache-03 version 1.x",Deprecation Warning
+"Failed login for user deploy_bot from ip 192.168.99.13",Security Alert
+"Connection pool exhausted on service auth-svc",Resource Usage
+"Thread pool full on service db-01",Resource Usage
+"Retry limit reached for job 8823",Workflow Error
+"Docs updated for the onboarding guide",Unknown
+"Sunset date announced for worker-7 v1 API",Deprecation Warning
+"Pipeline crash in stage extract for node-12",Workflow Error
+"Cache warmed for api-gateway across all regions",Unknown
+"Memory usage at 82% on server worker-7, threshold exceeded",Resource Usage
+"Unauthorized access attempt from 10.0.0.1",Security Alert
+"New engineer joined the payments team",Unknown
+"Intrusion detected on host billing",Security Alert
+"Certificate validation failed for host billing",Security Alert
+"Disk space critical: /dev/sda1 at 94% capacity",Resource Usage
+"Pipeline crash in stage extract for auth-svc",Workflow Error
+"Port scan detected from external ip 192.168.1.105",Security Alert
+"CPU utilization reached 88% on host cache-03",Resource Usage
+"Load average above normal on db-01",Resource Usage
+"Blocked request from ip 45.33.32.156 - brute force suspected",Security Alert
+"Feature flag checkout_v2 enabled for 5% of traffic",Unknown
+"Latency looks a bit high this morning",Unknown
+"Firewall violation: ip 172.16.4.22 blocked",Security Alert
+"Request served from cache in 12ms",Unknown
+"Sunset date announced for api-gateway v1 API",Deprecation Warning
+"Backup job 60012 failed",Workflow Error
+"Data pipeline crashed during ETL step at transform phase",Workflow Error
+"Request served from cache in 12ms",Unknown
+"Account takeover in progress for user deploy_bot",Security Alert
+"Bandwidth saturated at 94% on cache-03",Resource Usage
+"Config option legacy_mode is obsolete",Deprecation Warning
+"Meeting rescheduled to Thursday",Unknown
+"Data pipeline crashed during ETL step at transform phase",Workflow Error
+"Multiple failed login attempts detected for user svc_account",Security Alert
+"Privilege escalation attempt by user jsmith",Security Alert
+"Uncaught exception in service payments",Workflow Error
+"Possible sql injection attempt on endpoint cache-03",Security Alert
+"Firewall violation: ip 45.33.32.156 blocked",Security Alert
+"Multiple failed login attempts detected for user root",Security Alert
+"Thread pool full on service payments",Resource Usage
+"Team standup notes published to the wiki",Unknown
+"Out of memory error in worker on checkout",Resource Usage
+"Blocked request from ip 10.0.0.1 - brute force suspected",Security Alert
+"Suspicious login pattern for account kiran",Security Alert
+"Possible sql injection attempt on endpoint api-gateway",Security Alert
+"Docs updated for the onboarding guide",Unknown
+"Function getUserData() is deprecated, use fetchUser()",Deprecation Warning
+"Data pipeline crashed during ETL step at transform phase",Workflow Error
+"Support for TLS 1.0 will be retired next month",Deprecation Warning
+"Multiple failed login attempts detected for user jsmith",Security Alert
+"Cache hit ratio dropped to 82% on web-frontend instance",Resource Usage
+"Migration 445 failed and was rolled back",Workflow Error
+"Access denied for user admin_42 on admin panel",Security Alert
+"This feature will be removed in the next release",Deprecation Warning
+"Latency looks a bit high this morning",Unknown
+"Legacy auth flow is no longer supported",Deprecation Warning
+"Job 2281 failed after 3 retries",Workflow Error
+"Python module distutils is deprecated in Python 3.12",Deprecation Warning
+"Old signing algorithm is deprecated, use RS256",Deprecation Warning
+"Feature request filed: add dark mode",Unknown
+"Backup job 445 failed",Workflow Error
+"Quarterly report generated for web-frontend",Unknown
+"Health check passed for service api-gateway",Unknown
+"Python module distutils is deprecated in Python 3.12",Deprecation Warning
+"Unexpected error in batch 10422",Workflow Error
+"Two-factor authentication failed for user kiran",Security Alert
+"Connection pool exhausted on service node-12",Resource Usage
+"Resource exhaustion on cache-03",Resource Usage
+"Legacy auth flow is no longer supported",Deprecation Warning
+"Uncaught exception in service node-12",Workflow Error
+"Out of memory error in worker on db-01",Resource Usage
+"Blocked request from ip 172.16.4.22 - brute force suspected",Security Alert
+"Failed login for user test_user from ip 203.0.113.7",Security Alert
+"XSS payload detected in request to cache-03",Security Alert
+"Feature flag checkout_v2 enabled for 5% of traffic",Unknown
+"This feature will be removed in the next release",Deprecation Warning
+"User says the app feels slow today",Unknown
+"Data exfiltration attempt from db-01",Security Alert
+"Disk usage 87% on volume data-87",Resource Usage
+"Scheduled maintenance window starts at 02:00",Unknown
+"Invalid credentials supplied for user alice",Security Alert
+"Heap usage at 95% for service web-frontend",Resource Usage
+"Retry limit reached for job 2281",Workflow Error
+"Unexpected error in batch 9931",Workflow Error
+"Function getUserData() is deprecated, use fetchUser()",Deprecation Warning
+"Heap usage at 87% for service worker-7",Resource Usage
+"Deprecation warning: default codec will change",Deprecation Warning
+"Deployment of checkout failed validation",Workflow Error
+"Job 60012 failed after 3 retries",Workflow Error
+"XSS payload detected in request to billing",Security Alert
+"Config option legacy_mode is obsolete",Deprecation Warning
+"Unauthorized access attempt from 192.168.1.105",Security Alert
+"Disk usage 94% on volume data-94",Resource Usage
+"Old signing algorithm is deprecated, use RS256",Deprecation Warning
+"Migration 8823 failed and was rolled back",Workflow Error
+"Two-factor authentication failed for user svc_account",Security Alert
+"Cache warmed for cache-03 across all regions",Unknown
+"Privilege escalation attempt by user deploy_bot",Security Alert
+"Function getUserData() is deprecated, use fetchUser()",Deprecation Warning
+"Task queue processing failed for job 2281",Workflow Error
+"Meeting rescheduled to Thursday",Unknown
+"Health check passed for service auth-svc",Unknown
+"User says the app feels slow today",Unknown
+"Resource exhaustion on worker-7",Resource Usage
+"Malware signature found in file upload by jsmith",Security Alert
+"User says the app feels slow today",Unknown
+"Memory usage at 97% on server db-01, threshold exceeded",Resource Usage
+"Two-factor authentication failed for user admin_42",Security Alert
+"Use requests instead of urllib for HTTP calls",Deprecation Warning
+"Container restart detected for pod web-frontend",Workflow Error
+"Method getValue() is superseded by value()",Deprecation Warning
+"Authentication failure for user alice from ip 192.168.1.105",Security Alert
+"Authentication failure for user deploy_bot from ip 192.168.99.13",Security Alert
+"Malware signature found in file upload by maria",Security Alert
+"New engineer joined the payments team",Unknown
+"Thread pool full on service payments",Resource Usage
+"end-of-life notice for auth-svc version 1.x",Deprecation Warning
+"Cache hit ratio dropped to 82% on checkout instance",Resource Usage
+"ETL job 10422 crashed on write",Workflow Error
+"Parameter 'verbose' is deprecated, use log_level instead",Deprecation Warning
+"Invalid credentials supplied for user deploy_bot",Security Alert
+"end-of-life notice for billing version 1.x",Deprecation Warning
+"XSS payload detected in request to db-01",Security Alert
+"API v1 endpoint /legacy is deprecated, migrate to v2",Deprecation Warning
+"Swap memory pressure detected on node-12",Resource Usage
+"Deadlock detected on table orders in billing",Workflow Error
+"API v1 endpoint /legacy is deprecated, migrate to v2",Deprecation Warning
+"Unauthorized access attempt from 192.168.99.13",Security Alert
+"Backup job 445 failed",Workflow Error
+"Intrusion detected on host checkout",Security Alert
+"Cron job 8823 uses a deprecated schedule format",Deprecation Warning
+"Port scan detected from external ip 192.168.99.13",Security Alert
+"GPU memory exhausted on node node-12",Resource Usage
+"Parameter 'verbose' is deprecated, use log_level instead",Deprecation Warning
+"Bandwidth saturated at 94% on web-frontend",Resource Usage
+"Unexpected error in batch 9931",Workflow Error
+"Meeting rescheduled to Thursday",Unknown
+"Health check passed for service billing",Unknown
+"Deploy of checkout finished successfully",Unknown
+"Job 445 completed successfully in 4.2s",Unknown
+"GPU memory exhausted on node billing",Resource Usage
+"Workflow auth-svc aborted unexpectedly",Workflow Error
+"Possible sql injection attempt on endpoint billing",Security Alert
+"Timeout after 30s waiting for checkout",Workflow Error
+"Disk space critical: /dev/sda1 at 95% capacity",Resource Usage
+"Failed login for user deploy_bot from ip 203.0.113.7",Security Alert
+"Feature flag checkout_v2 enabled for 5% of traffic",Unknown
+"Scheduled maintenance window starts at 02:00",Unknown
+"Suspicious login pattern for account deploy_bot",Security Alert
+"Quarterly report generated for worker-7",Unknown
+"Deadlock detected on table orders in node-12",Workflow Error
+"Deploy of api-gateway finished successfully",Unknown
+"Resource exhaustion on worker-7",Resource Usage
+"Use requests instead of urllib for HTTP calls",Deprecation Warning
+"Config option legacy_mode is obsolete",Deprecation Warning
+"Use requests instead of urllib for HTTP calls",Deprecation Warning
+"Intrusion detected on host node-12",Security Alert
+"Cron job 445 uses a deprecated schedule format",Deprecation Warning
+"Certificate validation failed for host billing",Security Alert
+"Access denied for user deploy_bot on admin panel",Security Alert
+"ETL job 8823 crashed on write",Workflow Error
+"Port scan detected from external ip 192.168.1.105",Security Alert
+"Team standup notes published to the wiki",Unknown
+"Out of memory error in worker on cache-03",Resource Usage
+"Deprecation warning: default codec will change",Deprecation Warning
+"Cache hit ratio dropped to 94% on checkout instance",Resource Usage
+"Team standup notes published to the wiki",Unknown
+"Migration 60012 failed and was rolled back",Workflow Error
+"Job 10422 completed successfully in 4.2s",Unknown
+"CPU utilization reached 87% on host auth-svc",Resource Usage
+"Session hijack detected for user admin_42 from 172.16.4.22",Security Alert
+"Job 2281 completed successfully in 4.2s",Unknown
+"Disk usage 94% on volume data-94",Resource Usage
+"Container restart detected for pod api-gateway",Workflow Error
+"Timeout after 30s waiting for worker-7",Workflow Error
+"GPU memory exhausted on node cache-03",Resource Usage
+"Feature request filed: add dark mode",Unknown
+"Retry limit reached for job 9931",Workflow Error
+"Scheduled maintenance window starts at 02:00",Unknown
+"Malware signature found in file upload by alice",Security Alert
+"Account takeover in progress for user maria",Security Alert
+"Session hijack detected for user kiran from 203.0.113.7",Security Alert
+"Task queue processing failed for job 445",Workflow Error

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Incident Triage Console</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>Incident Triage Console</h1>
+    <p class="tagline">Regex &rarr; ML &rarr; LLM. Cheapest tier that is confident enough wins.</p>
+  </div>
+  <div id="health" class="health">checking&hellip;</div>
+</header>
+
+<main>
+
+  <!-- ── Single line ─────────────────────────────────────────── -->
+  <section class="panel" id="single-panel">
+    <h2>Classify one line</h2>
+    <p class="hint">
+      Use this while debugging a single message. For anything longer, use the batch
+      tab below &mdash; the tier economics only make sense across many lines.
+    </p>
+
+    <div class="row">
+      <input type="text" id="single-input"
+             placeholder="Memory usage at 87% on server node-12"
+             autocomplete="off" spellcheck="false">
+      <label class="check" title="Turn the LLM tier off so nothing leaves this machine">
+        <input type="checkbox" id="single-offline"> offline only
+      </label>
+      <button id="single-go">Classify</button>
+    </div>
+
+    <div id="single-out" class="result empty">No line classified yet.</div>
+  </section>
+
+  <!-- ── Batch ───────────────────────────────────────────────── -->
+  <section class="panel" id="batch-panel">
+    <h2>Triage a batch</h2>
+    <p class="hint">
+      Paste log lines or drop a <code>.log</code> file. Timestamps in
+      <code>[2026-09-30 02:14:01]</code> or syslog form are parsed and used to
+      group lines into incidents.
+    </p>
+
+    <div id="dropzone" class="dropzone">
+      <strong>Drop a .log file</strong>
+      <span>or paste below</span>
+      <input type="file" id="file-input" accept=".log,.txt" hidden>
+    </div>
+
+    <textarea id="batch-input" rows="10" spellcheck="false"
+      placeholder="[2026-09-30 02:14:01] Multiple failed login attempts detected for user admin_42&#10;[2026-09-30 02:14:09] Failed login for user admin_42 from ip 203.0.113.7&#10;[2026-09-30 08:40:00] Memory usage at 94% on server node-12"></textarea>
+
+    <div class="row">
+      <label class="check" title="Keep every line on this machine">
+        <input type="checkbox" id="batch-offline"> offline only
+      </label>
+      <button id="batch-go" class="primary">Triage</button>
+    </div>
+
+    <div id="batch-out" class="result empty">No batch run yet.</div>
+  </section>
+
+  <!-- ── History ─────────────────────────────────────────────── -->
+  <section class="panel" id="history-panel">
+    <h2>Previous runs</h2>
+    <p class="hint">Stored in a local SQLite file. Nothing leaves this machine.</p>
+    <table id="history-table">
+      <thead>
+        <tr><th>Run</th><th>When</th><th>Lines</th><th>Incidents</th><th>Cost</th><th></th></tr>
+      </thead>
+      <tbody id="history-body"><tr><td colspan="6" class="muted">Loading&hellip;</td></tr></tbody>
+    </table>
+  </section>
+
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

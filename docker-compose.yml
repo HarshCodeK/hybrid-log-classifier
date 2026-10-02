@@ -1,0 +1,18 @@
+services:
+  triage:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      # Optional. Copy .env.example to .env first. Without it the app still
+      # runs -- regex and ML tiers only, unmatched lines come back as Unknown.
+      - path: .env
+        required: false
+    volumes:
+      # Persist the SQLite history across container restarts. Named volume
+      # rather than a bind mount so the path is correct on Windows too.
+      - triage-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  triage-data:
