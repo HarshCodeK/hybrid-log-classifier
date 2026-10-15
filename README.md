@@ -2,110 +2,91 @@
 
 A small incident-intelligence service that routes application logs through the cheapest trustworthy classifier first.
 
-Pipeline: rules → local ML → optional LLM → unknown when the system cannot justify an answer.
+**Pipeline:** rules → local ML → optional LLM → unknown when the system cannot justify an answer.
 
-Technology: Python, FastAPI, scikit-learn, Groq-compatible LLM API, SQLite, Streamlit.
+**Stack:** Python, FastAPI, scikit-learn, Groq-compatible LLM API, SQLite, Streamlit.
 
 ## Why this project exists
 
 Operational teams receive logs ranging from obvious events such as failed login to ambiguous wording such as the checkout path feels degraded. A single LLM call for every line is unnecessarily expensive and introduces a network dependency. A rules-only system cannot handle wording variation.
 
-This project demonstrates a hybrid decision boundary: deterministic evidence first, local statistical inference second, and a paid probabilistic model only when the cheaper tiers abstain.
+This project demonstrates an explicit decision boundary: deterministic evidence first, local statistical inference second, and a probabilistic model only when the cheaper tiers abstain. The ML tier is allowed to say “I do not know,” which makes escalation measurable instead of hiding uncertainty behind a forced prediction.
 
-The key engineering idea is abstention. The ML tier is allowed to say “I do not know”. That makes escalation measurable instead of hiding uncertainty behind a forced prediction.
+## Architecture
+
+1. **Rules:** deterministic patterns handle narrow, high-confidence cases.
+2. **Local ML:** character TF-IDF plus logistic regression handles wording variation and abstains below a configurable confidence threshold.
+3. **Optional LLM:** Groq is called only after ML abstention. Provider responses are schema-validated; provider failures become unknown, not a fabricated classification.
+4. **Persistence:** SQLite records classification outcomes and latency. WAL plus a busy timeout helps concurrent writes on one host; SQLite is not a multi-replica database.
+5. **Interfaces:** FastAPI exposes the API, while Streamlit provides an interactive demo.
+
+No vector database or orchestration framework is used because this problem does not require retrieval or complex workflow orchestration.
 
 ## Quickstart
 
-Create a Python 3.11+ environment and install requirements.txt.
+Requires Python 3.11+.
 
-Run:
+~~~bash
+python -m venv .venv
+# macOS/Linux:
+source .venv/bin/activate
+# Windows PowerShell:
+# .venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+PYTHONPATH=src python scripts/train.py
+PYTHONPATH=src pytest
+PYTHONPATH=src python scripts/evaluate.py
+PYTHONPATH=src uvicorn hybrid_log_classifier.api:app --reload
+~~~
 
-- PYTHONPATH=src python scripts/train.py
-- PYTHONPATH=src pytest
-- PYTHONPATH=src python scripts/evaluate.py
-- PYTHONPATH=src uvicorn hybrid_log_classifier.api:app --reload
+In another terminal, use PYTHONPATH=src streamlit run app.py for the UI.
 
-The API exposes GET /health and POST /classify. The Streamlit demo runs with PYTHONPATH=src streamlit run app.py.
+Without GROQ_API_KEY, rules and ML still work. ML abstentions return unknown. The model is generated locally from the small included corpus; it is not production-trained.
 
-The LLM is optional. Without GROQ_API_KEY, rule and ML paths still work; an ML abstention becomes unknown.
+## API
 
-## Architecture decisions
+- GET /health: liveness only.
+- GET /ready: initializes the classifier and checks readiness; use it for deployment health checks.
+- GET /metrics: process-local request counters, status codes, in-flight count, and recent latency percentiles.
+- POST /classify: accepts {"text": "failed login user=demo"} and returns category, tier, confidence, reason, and service-observed classification latency.
+- GET /docs: interactive API documentation from FastAPI.
 
-1. Rules are first because explicit operational patterns are deterministic and cheap.
-2. Character TF-IDF plus logistic regression is the local model because the corpus is small, log-like, and needs a probability signal for abstention.
-3. SQLite is used for local history because there is no current multi-host database requirement.
-4. No vector database is used because there is no retrieval problem.
-5. No orchestration framework is used because the routing policy is a small explicit state machine.
-6. The LLM is a last resort and its output is schema-validated.
-7. Provider failure becomes unknown rather than a fabricated confident answer.
+Example:
 
-See docs/ARCHITECTURE.md for the full decision record.
+~~~bash
+curl -s http://127.0.0.1:8000/classify \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"failed login user=demo"}'
+~~~
 
-## Evaluation
+## Evaluation and honest interpretation
 
-The included dataset is synthetic and small. Its metrics are evidence about this repository's corpus, not production performance.
+The included data is synthetic and small. The included grouped five-fold evaluation reported accuracy 0.489 and macro F1 0.422 over all held-out examples; at confidence threshold 0.30, accepted coverage was 0.305 and accepted accuracy was 0.920. These are corpus-specific results, not production claims. Rerun PYTHONPATH=src python scripts/evaluate.py after changing the corpus, features, model, or threshold.
 
-Current grouped five-fold evaluation:
+## Reproducible load testing
 
-- grouped accuracy: 0.489
-- grouped macro F1: 0.422
-- accepted coverage at confidence 0.30: 0.305
-- accepted accuracy at confidence 0.30: 0.920
-- accepted macro F1 at confidence 0.30: 0.873
+See docs/RELIABILITY_LAB.md. Start small and ramp:
 
-The important trade-off is that the ML tier accepts roughly 30.5% of held-out examples at the configured threshold and is correct on roughly 92.0% of those accepted examples in this small evaluation. Remaining cases should escalate or remain unknown.
+~~~bash
+python scripts/load_test.py --base-url http://127.0.0.1:8000 --requests 100 --concurrency 10 --output artifacts/load-10.json
+curl http://127.0.0.1:8000/metrics
+~~~
 
-Regenerate the numbers after changing the data, model, features, or threshold. Do not present them as production benchmarks.
+The report captures client-observed throughput, p50/p95/p99 latency, error rate, status codes, transport errors, and bytes received. It does not claim real users, server resource usage, or capacity beyond the tested host and workload. Keep both the first failing run and the retest after remediation.
 
-## Incident grouping
+## Deployment
 
-Events are grouped only when they share a supported entity, category, and bounded time window. This avoids turning every event mentioning the same host into one indefinite incident.
+The root render.yaml defines a free Render web service for the API. Free services sleep after inactivity and use ephemeral local storage, so this is a public demo, not 24/7 production hosting. Deploy the Streamlit UI separately through Streamlit Community Cloud using the root app.py entry point. The app bootstraps its small local model when the artifact is absent.
 
 ## Testing
 
-The repository contains unit, integration, API, evaluation and build checks. Public CI trains the model, runs pytest, runs grouped evaluation, compiles sources, checks whitespace, builds the Docker image, starts the container, checks health, and classifies a smoke-test log.
+CI trains the model, runs unit/API/service tests and grouped evaluation, compiles Python source, checks whitespace, builds the Docker image, starts it, checks health, and classifies a smoke-test log. Public CI avoids real provider calls, so tests do not require secrets or incur API cost.
 
-A real Groq request is intentionally not part of public CI because it would require a secret and create a paid external test dependency. The provider boundary is tested with deterministic fakes. Live provider smoke testing belongs in a controlled environment.
+## Security and limitations
 
-## Security
+Input lengths are bounded, provider output is validated, secrets come from environment variables, and the LLM prompt treats log text as untrusted data. These controls do not amount to complete prompt-injection protection.
 
-Input lengths are bounded. Provider output is schema-validated. Provider failures fail closed. Secrets come from environment variables and are not written to SQLite. The LLM prompt treats log content as data.
-
-These are application-level controls, not claims of complete prompt-injection protection or public-service hardening. See docs/THREAT_MODEL.md.
-
-## Development history
-
-The repository was reconstructed from the project concept only. The archived repository is preserved separately and is not part of this Git history.
-
-The development history is intentionally small and phase-oriented:
-
-- foundation
-- domain and rules
-- local ML
-- routing and persistence
-- incident grouping
-- LLM fallback
-- FastAPI
-- Streamlit
-- evaluation and interview documentation
-- ML tuning
-- CI, Docker and security audit
-
-Each phase was tested before the next change was accepted.
-
-## Interview preparation
-
-docs/INTERVIEW_QA.md covers the main product, architecture, data, reliability, security, scale, testing and trade-off questions an interviewer can ask about the current implementation.
-
-## Honest limitations
-
-- training data is synthetic and small
-- ML quality is not established on production logs
-- rule and entity coverage is intentionally narrow
-- SQLite is intended for local or single-process use
-- there is no API authentication or rate limiting
-- log text is untrusted and prompt injection is not fully solved
-- incident grouping is heuristic
+Known limitations: synthetic and narrow training data; limited rules/entity coverage; SQLite intended for local or single-process use; no end-user authentication or API rate limiting; heuristic incident grouping; optional provider availability and cost; and no production reliability claim.
 
 ## License
 

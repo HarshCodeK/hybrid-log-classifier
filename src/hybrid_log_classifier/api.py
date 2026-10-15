@@ -1,15 +1,19 @@
 from datetime import datetime
+import logging
 from pathlib import Path
 import os
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel, Field
 
 from .domain import Classification, LogEvent
 from .llm import GroqLLM
 from .ml import MLClassifier
+from .observability import ProcessMetrics
 from .persistence import ClassificationStore
 from .service import ClassifierService
+
+logger = logging.getLogger(__name__)
 
 
 class ClassifyRequest(BaseModel):
@@ -37,12 +41,44 @@ def build_service() -> ClassifierService:
 
 
 def create_app(service: ClassifierService | None = None) -> FastAPI:
-    app = FastAPI(title="Hybrid Log Classifier", version="0.1.0")
+    app = FastAPI(title="Hybrid Log Classifier", version="0.2.0")
     classifier = service
+    metrics = ProcessMetrics()
+    excluded_metrics_paths = {"/health", "/ready", "/metrics"}
+
+    @app.middleware("http")
+    async def collect_request_metrics(request, call_next):
+        if request.url.path in excluded_metrics_paths:
+            return await call_next(request)
+        started = metrics.start()
+        status_code = 500
+        try:
+            response = await call_next(request)
+            status_code = response.status_code
+            return response
+        finally:
+            metrics.finish(f"{request.method} {request.url.path}", status_code, started)
 
     @app.get("/health")
     def health() -> dict[str, str]:
+        # Liveness only. Deployment readiness is reported by /ready.
         return {"status": "ok", "llm": "configured" if os.getenv("GROQ_API_KEY") else "disabled"}
+
+    @app.get("/ready")
+    def ready(response: Response) -> dict[str, str]:
+        nonlocal classifier
+        try:
+            if classifier is None:
+                classifier = build_service()
+            return {"status": "ready"}
+        except Exception:
+            logger.exception("readiness check failed")
+            response.status_code = 503
+            return {"status": "not_ready"}
+
+    @app.get("/metrics")
+    def get_metrics() -> dict:
+        return metrics.snapshot()
 
     @app.post("/classify", response_model=ClassifyResponse)
     def classify(request: ClassifyRequest) -> ClassifyResponse:
@@ -51,7 +87,7 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
             try:
                 classifier = build_service()
             except RuntimeError as exc:
-                raise HTTPException(status_code=503, detail=str(exc)) from exc
+                raise HTTPException(status_code=503, detail="classifier is not ready") from exc
         result: Classification = classifier.classify(LogEvent(request.text, request.timestamp))
         return ClassifyResponse(
             category=result.category.value,
