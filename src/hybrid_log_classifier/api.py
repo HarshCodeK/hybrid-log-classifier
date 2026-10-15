@@ -2,7 +2,9 @@ from datetime import datetime
 from pathlib import Path
 import os
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+
+from .observability import RequestMetrics
 from pydantic import BaseModel, Field
 
 from .domain import Classification, LogEvent
@@ -39,6 +41,26 @@ def build_service() -> ClassifierService:
 def create_app(service: ClassifierService | None = None) -> FastAPI:
     app = FastAPI(title="Hybrid Log Classifier", version="0.1.0")
     classifier = service
+    metrics = RequestMetrics()
+
+    @app.middleware("http")
+    async def observe_requests(request: Request, call_next):
+        if request.url.path == "/metrics":
+            return await call_next(request)
+        started = __import__("time").perf_counter()
+        metrics.begin()
+        status_code = 500
+        try:
+            response = await call_next(request)
+            status_code = response.status_code
+            response.headers["X-Process-Time-Ms"] = f"{(__import__('time').perf_counter() - started) * 1000:.2f}"
+            return response
+        finally:
+            metrics.finish(request.url.path, status_code, (__import__("time").perf_counter() - started) * 1000)
+
+    @app.get("/metrics")
+    def get_metrics() -> dict:
+        return metrics.snapshot()
 
     @app.get("/health")
     def health() -> dict[str, str]:
