@@ -1,5 +1,6 @@
 from datetime import datetime
 from pathlib import Path
+from threading import Lock
 import os
 
 from fastapi import FastAPI, HTTPException, Request
@@ -41,6 +42,7 @@ def build_service() -> ClassifierService:
 def create_app(service: ClassifierService | None = None) -> FastAPI:
     app = FastAPI(title="Hybrid Log Classifier", version="0.1.0")
     classifier = service
+    classifier_lock = Lock()
     metrics = RequestMetrics()
 
     @app.middleware("http")
@@ -72,10 +74,13 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
     def classify(request: ClassifyRequest) -> ClassifyResponse:
         nonlocal classifier
         if classifier is None:
-            try:
-                classifier = build_service()
-            except RuntimeError as exc:
-                raise HTTPException(status_code=503, detail=str(exc)) from exc
+            # Prevent duplicate model loads and SQLite handles during concurrent first requests.
+            with classifier_lock:
+                if classifier is None:
+                    try:
+                        classifier = build_service()
+                    except RuntimeError as exc:
+                        raise HTTPException(status_code=503, detail=str(exc)) from exc
         result: Classification = classifier.classify(LogEvent(request.text, request.timestamp))
         return ClassifyResponse(
             category=result.category.value,
