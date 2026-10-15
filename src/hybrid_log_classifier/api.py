@@ -2,6 +2,7 @@ from datetime import datetime
 import logging
 from pathlib import Path
 import os
+from threading import Lock
 
 from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel, Field
@@ -43,8 +44,17 @@ def build_service() -> ClassifierService:
 def create_app(service: ClassifierService | None = None) -> FastAPI:
     app = FastAPI(title="Hybrid Log Classifier", version="0.2.0")
     classifier = service
+    classifier_lock = Lock()
     metrics = ProcessMetrics()
     excluded_metrics_paths = {"/health", "/ready", "/metrics"}
+
+    def ensure_classifier() -> ClassifierService:
+        nonlocal classifier
+        if classifier is None:
+            with classifier_lock:
+                if classifier is None:
+                    classifier = build_service()
+        return classifier
 
     @app.middleware("http")
     async def collect_request_metrics(request, call_next):
@@ -61,15 +71,12 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
 
     @app.get("/health")
     def health() -> dict[str, str]:
-        # Liveness only. Deployment readiness is reported by /ready.
         return {"status": "ok", "llm": "configured" if os.getenv("GROQ_API_KEY") else "disabled"}
 
     @app.get("/ready")
     def ready(response: Response) -> dict[str, str]:
-        nonlocal classifier
         try:
-            if classifier is None:
-                classifier = build_service()
+            ensure_classifier()
             return {"status": "ready"}
         except Exception:
             logger.exception("readiness check failed")
@@ -82,13 +89,12 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
 
     @app.post("/classify", response_model=ClassifyResponse)
     def classify(request: ClassifyRequest) -> ClassifyResponse:
-        nonlocal classifier
-        if classifier is None:
-            try:
-                classifier = build_service()
-            except RuntimeError as exc:
-                raise HTTPException(status_code=503, detail="classifier is not ready") from exc
-        result: Classification = classifier.classify(LogEvent(request.text, request.timestamp))
+        try:
+            active_classifier = ensure_classifier()
+        except Exception as exc:
+            logger.exception("classifier initialization failed")
+            raise HTTPException(status_code=503, detail="classifier is not ready") from exc
+        result: Classification = active_classifier.classify(LogEvent(request.text, request.timestamp))
         return ClassifyResponse(
             category=result.category.value,
             tier=result.tier.value,
