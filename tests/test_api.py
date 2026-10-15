@@ -41,3 +41,13 @@ def test_classify_rejects_empty_text():
     client = TestClient(create_app(FakeService()))
     response = client.post("/classify", json={"text": ""})
     assert response.status_code == 422
+
+
+def test_unmatched_paths_do_not_create_unbounded_metric_labels():
+    client = TestClient(create_app(FakeService()))
+    client.get("/unmatched-a")
+    client.get("/unmatched-b")
+    routes = client.get("/metrics").json()["routes"]
+    assert "GET <unmatched>" in routes
+    assert "GET /unmatched-a" not in routes
+    assert "GET /unmatched-b" not in routes
