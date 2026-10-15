@@ -1,6 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 from threading import Lock
+from time import perf_counter
 import os
 
 from fastapi import FastAPI, HTTPException, Request
@@ -49,18 +50,18 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
     async def observe_requests(request: Request, call_next):
         if request.url.path == "/metrics":
             return await call_next(request)
-        started = __import__("time").perf_counter()
+        started = perf_counter()
         metrics.begin()
         status_code = 500
         try:
             response = await call_next(request)
             status_code = response.status_code
-            response.headers["X-Process-Time-Ms"] = f"{(__import__('time').perf_counter() - started) * 1000:.2f}"
+            response.headers["X-Process-Time-Ms"] = f"{(perf_counter() - started) * 1000:.2f}"
             return response
         finally:
             route = request.scope.get('route')
             route_name = getattr(route, 'path', '<unmatched>')
-            metrics.finish(route_name, status_code, (__import__("time").perf_counter() - started) * 1000)
+            metrics.finish(route_name, status_code, (perf_counter() - started) * 1000)
 
     @app.get("/metrics")
     def get_metrics() -> dict:
