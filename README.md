@@ -61,7 +61,7 @@ curl -s http://127.0.0.1:8000/classify \
 
 ## Evaluation and honest interpretation
 
-The included data is synthetic and small. The included grouped five-fold evaluation reported accuracy 0.489 and macro F1 0.422 over all held-out examples; at confidence threshold 0.30, accepted coverage was 0.305 and accepted accuracy was 0.920. These are corpus-specific results, not production claims. Rerun PYTHONPATH=src python scripts/evaluate.py after changing the corpus, features, model, or threshold.
+The included data is synthetic and small: 50 labeled examples across five categories. In the GitHub Actions evaluation run for commit `4eb0fe60a8ff0130ab86c8f3bb1175ca82385aa3` (Python 3.12; dependency versions resolved by CI at run time), grouped five-fold evaluation reported accuracy 0.580 and macro F1 0.539 over held-out examples. At confidence threshold 0.30, accepted coverage was 0.362, accepted accuracy 0.810, and accepted macro F1 0.727. These values are specific to that code/data/dependency run, not production claims; re-run `PYTHONPATH=src python scripts/evaluate.py` before publishing updated numbers after any change.
 
 ## Reproducible load testing
 
