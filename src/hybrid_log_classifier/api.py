@@ -56,7 +56,9 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
             response.headers["X-Process-Time-Ms"] = f"{(__import__('time').perf_counter() - started) * 1000:.2f}"
             return response
         finally:
-            metrics.finish(request.url.path, status_code, (__import__("time").perf_counter() - started) * 1000)
+            route = request.scope.get('route')
+            route_name = getattr(route, 'path', '<unmatched>')
+            metrics.finish(route_name, status_code, (__import__("time").perf_counter() - started) * 1000)
 
     @app.get("/metrics")
     def get_metrics() -> dict:
