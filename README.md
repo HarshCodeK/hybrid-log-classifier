@@ -25,7 +25,7 @@ Run:
 - PYTHONPATH=src python scripts/evaluate.py
 - PYTHONPATH=src uvicorn hybrid_log_classifier.api:app --reload
 
-The API exposes GET /health and POST /classify. The Streamlit demo runs with PYTHONPATH=src streamlit run app.py.
+The API exposes GET /health, GET /metrics, and POST /classify. Responses other than /metrics include an X-Process-Time-Ms header. Metrics are process-local, reset on restart, and are not aggregated across workers. The Streamlit demo runs with PYTHONPATH=src streamlit run app.py.
 
 The LLM is optional. Without GROQ_API_KEY, rule and ML paths still work; an ML abstention becomes unknown.
 
@@ -39,7 +39,7 @@ The LLM is optional. Without GROQ_API_KEY, rule and ML paths still work; an ML a
 6. The LLM is a last resort and its output is schema-validated.
 7. Provider failure becomes unknown rather than a fabricated confident answer.
 
-See docs/ARCHITECTURE.md for the full decision record.
+See docs/ARCHITECTURE.md for the full decision record and docs/RELIABILITY_LAB.md for the repeatable synthetic-load procedure, metric definitions, and capacity-claim limitations.
 
 ## Evaluation
 
