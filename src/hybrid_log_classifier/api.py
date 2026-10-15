@@ -67,7 +67,9 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
             status_code = response.status_code
             return response
         finally:
-            metrics.finish(f"{request.method} {request.url.path}", status_code, started)
+            route = request.scope.get("route")
+            route_name = getattr(route, "path", "<unmatched>")
+            metrics.finish(f"{request.method} {route_name}", status_code, started)
 
     @app.get("/health")
     def health() -> dict[str, str]:
