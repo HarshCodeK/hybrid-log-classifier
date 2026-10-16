@@ -90,7 +90,20 @@ async def run(args: argparse.Namespace) -> dict:
                     transport_errors[name] = transport_errors.get(name, 0) + 1
                     error_count += 1
 
-        await asyncio.gather(*(one_request() for _ in range(args.requests)))
+        # Use a bounded worker pool instead of allocating one task per request.
+        next_request = 0
+        next_request_lock = asyncio.Lock()
+
+        async def worker() -> None:
+            nonlocal next_request
+            while True:
+                async with next_request_lock:
+                    if next_request >= args.requests:
+                        return
+                    next_request += 1
+                await one_request()
+
+        await asyncio.gather(*(worker() for _ in range(min(args.concurrency, args.requests))))
 
     duration = max(perf_counter() - total_started, 1e-9)
     return {
@@ -144,6 +157,10 @@ def main() -> int:
         parser.error("pass --base-url or set BASE_URL")
     if args.requests < 1 or args.concurrency < 1 or args.timeout <= 0:
         parser.error("--requests, --concurrency and --timeout must be positive")
+    if args.requests > 100_000:
+        parser.error("--requests is capped at 100000 to bound the test run")
+    if args.concurrency > 10_000:
+        parser.error("--concurrency is capped at 10000; start lower and ramp gradually")
     if args.concurrency > 200:
         print("WARNING: high concurrency can overload a free instance. Cloudflare Quick Tunnels are documented for up to 200 in-flight requests.", file=sys.stderr)
     try:
