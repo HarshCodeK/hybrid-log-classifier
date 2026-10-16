@@ -65,3 +65,12 @@ def test_llm_enabled_demo_has_shared_request_limit(monkeypatch):
     assert second.status_code == 429
     metrics = client.get("/metrics").json()
     assert metrics["routes"]["POST /classify"]["status_codes_since_start"] == {"200": 1, "429": 1}
+
+
+def test_public_classify_has_a_shared_limit_without_provider_key(monkeypatch):
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
+    monkeypatch.setenv("API_REQUESTS_PER_MINUTE", "1")
+    client = TestClient(create_app(FakeService()))
+
+    assert client.post("/classify", json={"text": "failed login"}).status_code == 200
+    assert client.post("/classify", json={"text": "failed login"}).status_code == 429
