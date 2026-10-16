@@ -17,7 +17,7 @@ This project demonstrates an explicit decision boundary: deterministic evidence 
 1. **Rules:** deterministic patterns handle narrow, high-confidence cases.
 2. **Local ML:** character TF-IDF plus logistic regression handles wording variation and abstains below a configurable confidence threshold.
 3. **Optional LLM:** Groq is called only after ML abstention. Provider responses are schema-validated; provider failures become unknown, not a fabricated classification.
-4. **Persistence:** SQLite records classification outcomes and latency. WAL plus a busy timeout helps concurrent writes on one host; SQLite is not a multi-replica database.
+4. **Persistence:** SQLite records classification outcomes and latency, retaining the newest 10,000 rows by default. WAL plus a busy timeout helps concurrent writes on one host; SQLite is not a multi-replica database. The stored row includes the submitted log text, so use synthetic/de-identified logs only and do not expose this unauthenticated demo to sensitive production logs.
 5. **Interfaces:** FastAPI exposes the API, while Streamlit provides an interactive demo.
 
 No vector database or orchestration framework is used because this problem does not require retrieval or complex workflow orchestration.
