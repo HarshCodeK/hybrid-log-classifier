@@ -38,7 +38,7 @@ class ClassificationStore:
                 (text, result.category.value, result.tier.value, result.confidence, result.reason, result.latency_ms),
             )
             connection.execute(
-                "DELETE FROM classifications WHERE id NOT IN "
-                "(SELECT id FROM classifications ORDER BY id DESC LIMIT ?)",
+                "DELETE FROM classifications WHERE id <= "
+                "(SELECT MAX(id) FROM classifications) - ?",
                 (self._max_records,),
             )
