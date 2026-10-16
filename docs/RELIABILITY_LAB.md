@@ -20,7 +20,7 @@ python scripts/load_test.py --base-url http://127.0.0.1:8000 --requests 1000 --c
 curl http://127.0.0.1:8000/metrics
 ~~~
 
-The JSON report includes request count, configured in-flight concurrency, throughput, p50/p95/p99/max latency, status codes, transport failures, and bytes received. /metrics includes per-route counters and percentiles over a bounded recent sample window. The generator uses a bounded worker pool, caps a run at 100,000 requests and 10,000 configured in-flight requests, and treats only 2xx responses as successful. These are safety bounds for the client, not a claim that the target can sustain that concurrency.
+The JSON report includes request count, configured in-flight concurrency, throughput, p50/p95/p99/max latency, status codes, transport failures, and bytes received. /metrics includes per-route counters and percentiles over a bounded recent sample window. The generator redacts URL credentials, query strings and fragments from saved reports; pass secrets with `--header`, not in the URL. It uses a bounded worker pool, caps a run at 100,000 requests and 10,000 configured in-flight requests, and treats only 2xx responses as successful. These are safety bounds for the client, not a claim that the target can sustain that concurrency.
 
 ## What the evidence does and does not mean
 
