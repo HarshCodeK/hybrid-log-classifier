@@ -51,3 +51,17 @@ def test_unmatched_paths_do_not_create_unbounded_metric_labels():
     assert "GET <unmatched>" in routes
     assert "GET /unmatched-a" not in routes
     assert "GET /unmatched-b" not in routes
+
+
+def test_llm_enabled_demo_has_shared_request_limit(monkeypatch):
+    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+    monkeypatch.setenv("LLM_REQUESTS_PER_MINUTE", "1")
+    client = TestClient(create_app(FakeService()))
+
+    first = client.post("/classify", json={"text": "failed login"})
+    second = client.post("/classify", json={"text": "failed login"})
+
+    assert first.status_code == 200
+    assert second.status_code == 429
+    metrics = client.get("/metrics").json()
+    assert metrics["routes"]["POST /classify"]["status_codes_since_start"] == {"200": 1, "429": 1}
