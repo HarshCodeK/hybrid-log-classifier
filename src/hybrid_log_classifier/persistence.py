@@ -5,8 +5,11 @@ from .domain import Classification
 
 
 class ClassificationStore:
-    def __init__(self, path: Path) -> None:
+    def __init__(self, path: Path, max_records: int = 10_000) -> None:
+        if not isinstance(max_records, int) or isinstance(max_records, bool) or max_records < 1:
+            raise ValueError("max_records must be a positive integer")
         self._path = path
+        self._max_records = max_records
         self._path.parent.mkdir(parents=True, exist_ok=True)
         with sqlite3.connect(self._path, timeout=15.0) as connection:
             connection.execute("PRAGMA journal_mode=WAL")
@@ -33,4 +36,9 @@ class ClassificationStore:
             connection.execute(
                 "INSERT INTO classifications(text, category, tier, confidence, reason, latency_ms) VALUES (?, ?, ?, ?, ?, ?)",
                 (text, result.category.value, result.tier.value, result.confidence, result.reason, result.latency_ms),
+            )
+            connection.execute(
+                "DELETE FROM classifications WHERE id NOT IN "
+                "(SELECT id FROM classifications ORDER BY id DESC LIMIT ?)",
+                (self._max_records,),
             )
