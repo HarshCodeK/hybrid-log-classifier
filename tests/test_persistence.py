@@ -21,3 +21,16 @@ def test_concurrent_writes_are_persisted(tmp_path):
     with sqlite3.connect(db_path) as connection:
         total = connection.execute("SELECT COUNT(*) FROM classifications").fetchone()[0]
     assert total == 64
+
+
+def test_persistence_retains_only_the_newest_records(tmp_path):
+    db_path = tmp_path / "runtime" / "bounded.db"
+    store = ClassificationStore(db_path, max_records=3)
+    result = Classification(Category.SECURITY, ClassificationTier.RULE, 1.0, "test", 0.1)
+
+    for index in range(5):
+        store.save(f"synthetic log {index}", result)
+
+    with sqlite3.connect(db_path) as connection:
+        rows = connection.execute("SELECT text FROM classifications ORDER BY id").fetchall()
+    assert rows == [("synthetic log 2",), ("synthetic log 3",), ("synthetic log 4",)]
