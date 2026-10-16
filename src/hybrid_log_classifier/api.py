@@ -91,6 +91,9 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
         finally:
             route = request.scope.get("route")
             route_name = getattr(route, "path", "<unmatched>")
+            # Early middleware responses happen before routing populates scope["route"].
+            if route is None and request.url.path == "/classify":
+                route_name = "/classify"
             metrics.finish(f"{request.method} {route_name}", status_code, started)
 
     @app.get("/health")
