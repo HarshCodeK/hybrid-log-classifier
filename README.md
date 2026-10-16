@@ -86,7 +86,7 @@ CI trains the model, runs unit/API/service tests and grouped evaluation, compile
 
 Input lengths are bounded, provider output is validated, secrets come from environment variables, and the LLM prompt treats log text as untrusted data. These controls do not amount to complete prompt-injection protection.
 
-Known limitations: synthetic and narrow training data; limited rules/entity coverage; SQLite intended for local or single-process use; no end-user authentication; heuristic incident grouping; optional provider availability and cost; and no production reliability claim. When `GROQ_API_KEY` is configured, `/classify` is capped by a shared process-local `LLM_REQUESTS_PER_MINUTE` limit (default 30/minute) to reduce accidental provider spend. It is not per-user or distributed rate limiting.
+Known limitations: synthetic and narrow training data; limited rules/entity coverage; SQLite intended for local or single-process use; no end-user authentication; heuristic incident grouping; optional provider availability and cost; and no production reliability claim. `/classify` has a shared process-local `API_REQUESTS_PER_MINUTE` cap (default 120/minute); when `GROQ_API_KEY` is configured, the effective cap is also limited by `LLM_REQUESTS_PER_MINUTE` (default 30/minute) to reduce accidental provider spend. This is not per-user or distributed rate limiting.
 
 ## License
 
