@@ -15,7 +15,7 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: pip install -r requirements.txt pytest
       - run: PYTHONPATH=src python scripts/train.py
-      - run: PYTHONPATH=src pytest
+      - run: PYTHONPATH=.:src pytest
       - run: PYTHONPATH=src python scripts/evaluate.py
       - run: python -m compileall -q src app.py scripts
       - run: git diff --check
