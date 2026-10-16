@@ -1,10 +1,13 @@
+from collections import deque
 from datetime import datetime
 import logging
 from pathlib import Path
 import os
 from threading import Lock
+from time import monotonic
 
 from fastapi import FastAPI, HTTPException, Response
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from .domain import Classification, LogEvent
@@ -47,6 +50,22 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
     classifier_lock = Lock()
     metrics = ProcessMetrics()
     excluded_metrics_paths = {"/health", "/ready", "/metrics"}
+    provider_hits: deque[float] = deque()
+    provider_hits_lock = Lock()
+
+    def provider_request_allowed() -> bool:
+        try:
+            limit = max(1, int(os.getenv("LLM_REQUESTS_PER_MINUTE", "30")))
+        except ValueError:
+            limit = 30
+        now = monotonic()
+        with provider_hits_lock:
+            while provider_hits and now - provider_hits[0] >= 60:
+                provider_hits.popleft()
+            if len(provider_hits) >= limit:
+                return False
+            provider_hits.append(now)
+            return True
 
     def ensure_classifier() -> ClassifierService:
         nonlocal classifier
@@ -63,6 +82,9 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
         started = metrics.start()
         status_code = 500
         try:
+            if request.url.path == "/classify" and os.getenv("GROQ_API_KEY") and not provider_request_allowed():
+                status_code = 429
+                return JSONResponse(status_code=429, content={"detail": "the demo's shared LLM request limit was reached; retry later"})
             response = await call_next(request)
             status_code = response.status_code
             return response
