@@ -53,11 +53,17 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
     provider_hits: deque[float] = deque()
     provider_hits_lock = Lock()
 
-    def provider_request_allowed() -> bool:
+    def request_allowed() -> bool:
         try:
-            limit = max(1, int(os.getenv("LLM_REQUESTS_PER_MINUTE", "30")))
+            limit = max(1, int(os.getenv("API_REQUESTS_PER_MINUTE", "120")))
         except ValueError:
-            limit = 30
+            limit = 120
+        if os.getenv("GROQ_API_KEY"):
+            try:
+                llm_limit = max(1, int(os.getenv("LLM_REQUESTS_PER_MINUTE", "30")))
+            except ValueError:
+                llm_limit = 30
+            limit = min(limit, llm_limit)
         now = monotonic()
         with provider_hits_lock:
             while provider_hits and now - provider_hits[0] >= 60:
@@ -82,9 +88,9 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
         started = metrics.start()
         status_code = 500
         try:
-            if request.url.path == "/classify" and os.getenv("GROQ_API_KEY") and not provider_request_allowed():
+            if request.url.path == "/classify" and not request_allowed():
                 status_code = 429
-                return JSONResponse(status_code=429, content={"detail": "the demo's shared LLM request limit was reached; retry later"})
+                return JSONResponse(status_code=429, content={"detail": "the demo's shared request limit was reached; retry later"})
             response = await call_next(request)
             status_code = response.status_code
             return response
