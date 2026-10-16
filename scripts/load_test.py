@@ -80,7 +80,7 @@ async def run(args: argparse.Namespace) -> dict:
                     status = str(response.status_code)
                     status_codes[status] = status_codes.get(status, 0) + 1
                     response_bytes += len(response.content)
-                    if response.status_code < 400:
+                    if 200 <= response.status_code < 300:
                         success_count += 1
                     else:
                         error_count += 1
