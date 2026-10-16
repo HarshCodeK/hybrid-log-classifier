@@ -34,7 +34,7 @@ source .venv/bin/activate
 # .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 PYTHONPATH=src python scripts/train.py
-PYTHONPATH=src pytest
+PYTHONPATH=.:src pytest
 PYTHONPATH=src python scripts/evaluate.py
 PYTHONPATH=src uvicorn hybrid_log_classifier.api:app --reload
 ~~~
