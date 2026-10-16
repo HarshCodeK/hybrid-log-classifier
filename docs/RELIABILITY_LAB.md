@@ -40,7 +40,7 @@ The JSON report includes request count, configured in-flight concurrency, throug
 
 ## Known limits and deployment notes
 
-When `GROQ_API_KEY` is set, `/classify` applies a shared process-local ceiling of 30 requests/minute by default (`LLM_REQUESTS_PER_MINUTE`). This reduces accidental provider spend but limits all callers together; it is not authentication or distributed rate limiting. Test both with the provider disabled and with a test key plus a low configured limit.
+`/classify` applies a shared process-local ceiling of 120 requests/minute by default (`API_REQUESTS_PER_MINUTE`). When `GROQ_API_KEY` is set, the effective ceiling is also limited by `LLM_REQUESTS_PER_MINUTE` (default 30/minute). This reduces accidental resource/provider spend but limits all callers together; it is not authentication or distributed rate limiting. Test with the provider disabled and with a test key plus a low configured limit.
 
 SQLite WAL is a single-host optimization, not a shared database for replicas. Free Render web services sleep after inactivity and use ephemeral local storage, so local records can disappear after restarts or spin-down. This is a portfolio/demo environment, not an uptime guarantee.
 
