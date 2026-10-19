@@ -45,3 +45,19 @@ The JSON report includes request count, configured in-flight concurrency, throug
 SQLite WAL is a single-host optimization, not a shared database for replicas. Free Render web services sleep after inactivity and use ephemeral local storage, so local records can disappear after restarts or spin-down. This is a portfolio/demo environment, not an uptime guarantee.
 
 The /health endpoint is liveness. /ready initializes the model and reports readiness; use it for deployment health checks. /metrics is process-local and is not a production monitoring system.
+
+
+## Evidence-first incident triage
+
+The API and Streamlit demo include a bounded triage workflow that combines a saved load-test report with supplied logs. It validates report fields, classifies at most 200 events, groups related events, correlates timestamped events with the report window when possible, and produces a trace of the tools that ran.
+
+Use the exact JSON report written by `scripts/load_test.py`. Include timestamped logs as JSON Lines, for example:
+
+~~~json
+{"timestamp":"2026-10-16T12:01:00Z","text":"timeout service=checkout"}
+{"timestamp":"2026-10-16T12:02:00Z","text":"service unavailable service=checkout"}
+~~~
+
+Call `POST /triage` with the report object and log-event array, or use the **Incident triage** tab in Streamlit. The result distinguishes observed facts (e.g. HTTP 5xx count or client transport errors) from heuristic signals (e.g. p95 >= 1000 ms) and diagnostic suggestions. Without timestamps, the workflow does not claim temporal correlation.
+
+The workflow is intentionally bounded: it uses an allowlisted sequence of deterministic tools and the existing classifier, and it never runs shell commands or performs automatic remediation. Recommendations are not root-cause findings. Validate them against server logs, per-route metrics, and host-level CPU/memory before changing production systems. The triage endpoint shares the same process-local request ceiling as `/classify`.
