@@ -172,18 +172,21 @@ def run_triage(
         "output_summary": {"incident_count": len(incident_summaries)},
     })
 
-    correlated_count = 0
+    correlated_events: list[tuple[LogEvent, Classification]] = []
     correlation_available = False
     window_start = None
     window_end = report["timestamp_utc"]
     if window_end is not None:
         correlation_available = True
         window_start = window_end - timedelta(seconds=report["duration_seconds"])
-        correlated_count = sum(
-            1 for event in events
+        correlated_events = [
+            (event, result)
+            for event, result in classified
             if event.timestamp is not None
             and window_start <= event.normalized_timestamp() <= window_end
-        )
+        ]
+    correlated_count = len(correlated_events)
+    window_category_counts = Counter(result.category.value for _, result in correlated_events)
     trace.append({
         "tool": "correlate_log_window",
         "status": "completed",
@@ -191,6 +194,7 @@ def run_triage(
         "output_summary": {
             "correlation_available": correlation_available,
             "timestamped_events_in_window": correlated_count,
+            "categories_in_window": dict(window_category_counts),
         },
     })
 
@@ -286,7 +290,8 @@ def run_triage(
         "data": ("P1", "Inspect storage/database error context and verify whether retries or duplicate operations occurred."),
         "security": ("P2", "Review authentication/access events using approved, redacted logs; do not expose credentials or personal data."),
     }
-    for category, count in sorted(category_counts.items()):
+    categories_for_checks = window_category_counts if correlation_available else category_counts
+    for category, count in sorted(categories_for_checks.items()):
         if count and category in category_actions:
             priority, action = category_actions[category]
             add_check(priority, action, f"{count} log event(s) classified as {category}; classification is a heuristic, not proof of cause.", f"category_count[{category}]={count}")
@@ -326,7 +331,9 @@ def run_triage(
             "error_rate": round(report["error_rate"], 5),
             "p95_latency_ms": p95,
             "log_event_count": len(events),
+            "log_categories": dict(category_counts),
             "timestamped_events_in_load_window": correlated_count,
+            "in_window_categories": dict(window_category_counts),
             "incident_count": len(incident_summaries),
         },
         "signals": signals,
