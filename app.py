@@ -94,10 +94,10 @@ with tab_triage:
         "Logs (one JSON object per line)",
         placeholder='{"timestamp":"2026-10-16T12:01:00Z","text":"timeout service=checkout"}',
         height=180,
-        max_chars=100_000,
+        max_chars=4_200_000,
         key="triage-logs",
     )
-    st.caption("Bounds: report ≤ 1 MB; up to 200 log events; each log ≤ 20,000 characters.")
+    st.caption("Bounds: report ≤ 1 MB; up to 200 log events; each log ≤ 20,000 characters. The API request body is capped at 1 MB total.")
     if st.button("Run triage workflow", type="primary", key="run-triage"):
         if report_file is None:
             st.warning("Upload a load-test JSON report first.")
