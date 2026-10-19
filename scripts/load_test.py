@@ -129,7 +129,8 @@ async def run(args: argparse.Namespace) -> dict:
         "path": args.path,
         "requested_requests": args.requests,
         "configured_concurrency": args.concurrency,
-        "duration_seconds": round(duration, 3),
+        # Keep the serialized report valid for the triage parser on very fast runs.
+        "duration_seconds": max(round(duration, 3), 0.001),
         "throughput_requests_per_second": round(success_count / duration, 2),
         "attempted_requests_per_second": round(args.requests / duration, 2),
         "success_count": success_count,
