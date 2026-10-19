@@ -8,9 +8,9 @@ from threading import Lock
 from time import monotonic
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from .domain import Classification, LogEvent
 from .llm import GroqLLM
@@ -21,6 +21,7 @@ from .service import ClassifierService
 from .triage import TriageInputError, run_triage
 
 logger = logging.getLogger(__name__)
+MAX_TRIAGE_REQUEST_BYTES = 1_000_000
 
 
 class ClassifyRequest(BaseModel):
@@ -147,11 +148,26 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
         return metrics.snapshot()
 
     @app.post("/triage")
-    def triage(request: TriageRequest) -> dict:
+    async def triage(request: Request) -> dict:
+        # Bound bytes while receiving the ASGI body, before JSON parsing or model
+        # validation. This also covers chunked requests without Content-Length.
+        raw_body = bytearray()
+        async for chunk in request.stream():
+            raw_body.extend(chunk)
+            if len(raw_body) > MAX_TRIAGE_REQUEST_BYTES:
+                raise HTTPException(
+                    status_code=413,
+                    detail="triage request body is limited to 1 MB",
+                )
+        try:
+            payload = json.loads(raw_body)
+            parsed_request = TriageRequest.model_validate(payload)
+        except (json.JSONDecodeError, UnicodeDecodeError, ValidationError) as exc:
+            raise HTTPException(status_code=422, detail="invalid triage request JSON or schema") from exc
         try:
             active_classifier = ensure_classifier()
-            events = [LogEvent(item.text, item.timestamp) for item in request.logs]
-            return run_triage(request.load_report, events, active_classifier.classify)
+            events = [LogEvent(item.text, item.timestamp) for item in parsed_request.logs]
+            return run_triage(parsed_request.load_report, events, active_classifier.classify)
         except TriageInputError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
         except Exception as exc:
