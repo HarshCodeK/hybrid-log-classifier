@@ -5,6 +5,7 @@ from pathlib import Path
 import os
 from threading import Lock
 from time import monotonic
+from typing import Any
 
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.responses import JSONResponse
@@ -16,6 +17,7 @@ from .ml import MLClassifier
 from .observability import ProcessMetrics
 from .persistence import ClassificationStore
 from .service import ClassifierService
+from .triage import TriageInputError, run_triage
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +33,16 @@ class ClassifyResponse(BaseModel):
     confidence: float
     reason: str
     latency_ms: float
+
+
+class TriageLogInput(BaseModel):
+    text: str = Field(min_length=1, max_length=20_000)
+    timestamp: datetime | None = None
+
+
+class TriageRequest(BaseModel):
+    load_report: dict[str, Any]
+    logs: list[TriageLogInput] = Field(max_length=200)
 
 
 def build_service() -> ClassifierService:
@@ -119,6 +131,18 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
     @app.get("/metrics")
     def get_metrics() -> dict:
         return metrics.snapshot()
+
+    @app.post("/triage")
+    def triage(request: TriageRequest) -> dict:
+        try:
+            active_classifier = ensure_classifier()
+            events = [LogEvent(item.text, item.timestamp) for item in request.logs]
+            return run_triage(request.load_report, events, active_classifier.classify)
+        except TriageInputError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except Exception as exc:
+            logger.exception("triage workflow failed")
+            raise HTTPException(status_code=503, detail="triage workflow could not complete") from exc
 
     @app.post("/classify", response_model=ClassifyResponse)
     def classify(request: ClassifyRequest) -> ClassifyResponse:
