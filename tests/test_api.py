@@ -124,3 +124,21 @@ def test_triage_endpoint_rejects_more_than_200_logs():
         "logs": [{"text": "timeout"}] * 201,
     })
     assert response.status_code == 422
+
+
+
+def test_triage_endpoint_rejects_oversized_load_report():
+    client = TestClient(create_app(FakeService()))
+    response = client.post("/triage", json={
+        "load_report": {
+            "duration_seconds": 10,
+            "success_count": 1,
+            "error_count": 0,
+            "latency_ms": {},
+            "status_codes": {},
+            "transport_errors": {},
+            "unused_payload": "x" * 1_000_001,
+        },
+        "logs": [],
+    })
+    assert response.status_code == 422
