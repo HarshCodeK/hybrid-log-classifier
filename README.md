@@ -20,7 +20,7 @@ This project demonstrates an explicit decision boundary: deterministic evidence 
 4. **Persistence:** SQLite records classification outcomes and latency, retaining the newest 10,000 rows by default. WAL plus a busy timeout helps concurrent writes on one host; SQLite is not a multi-replica database. The stored row includes the submitted log text, so use synthetic/de-identified logs only and do not expose this unauthenticated demo to sensitive production logs.
 5. **Interfaces:** FastAPI exposes the API, while Streamlit provides an interactive demo.
 
-No vector database or orchestration framework is used because this problem does not require retrieval or complex workflow orchestration.
+No vector database or general-purpose orchestration framework is used. The incident-triage feature is a fixed, bounded tool workflow rather than a free-form autonomous agent.
 
 ## Quickstart
 
@@ -58,6 +58,46 @@ curl -s http://127.0.0.1:8000/classify \
   -H 'Content-Type: application/json' \
   -d '{"text":"failed login user=demo"}'
 ~~~
+
+
+## Bounded incident-triage workflow
+
+The triage workflow is designed to complement load-test analysis with log evidence. It runs a fixed sequence of allowlisted tools:
+
+1. Validate and summarize the load-test report.
+2. Classify each supplied log event using the existing rules → local ML → optional LLM pipeline.
+3. Group events into heuristic incidents.
+4. Correlate timestamped logs with the report's measured time window when the report includes `timestamp_utc`.
+5. Draft diagnostic checks linked to observed evidence.
+
+It does **not** execute shell commands, change infrastructure, or claim a root cause from aggregate metrics alone. Recommendations are investigation steps for a human operator. A p95 threshold of 1000 ms is labelled as a demo heuristic, not a universal SLO. If timestamps are absent, time-window correlation is explicitly unavailable.
+
+### Try the triage API
+
+Start the API as described above, then send a JSON report produced by `scripts/load_test.py` along with timestamped logs:
+
+~~~bash
+curl -s http://127.0.0.1:8000/triage \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "load_report": {
+      "timestamp_utc": "2026-10-16T12:05:00Z",
+      "duration_seconds": 300,
+      "requested_requests": 100,
+      "success_count": 92,
+      "error_count": 8,
+      "latency_ms": {"p50": 120, "p95": 1400, "p99": 2100, "max": 2600},
+      "status_codes": {"200": 92, "500": 8},
+      "transport_errors": {}
+    },
+    "logs": [
+      {"timestamp": "2026-10-16T12:01:00Z", "text": "timeout service=checkout"},
+      {"timestamp": "2026-10-16T12:02:00Z", "text": "service unavailable service=checkout"}
+    ]
+  }'
+~~~
+
+Inputs are bounded to a 1 MB load-test report, 200 events per run, and 20,000 characters per event. The Streamlit demo exposes the same workflow under **Incident triage** and accepts the JSON load-test report plus JSON Lines logs. The output includes a tool trace so each workflow stage is inspectable.
 
 ## Evaluation and honest interpretation
 

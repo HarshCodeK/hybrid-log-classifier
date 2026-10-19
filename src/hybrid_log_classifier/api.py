@@ -1,14 +1,16 @@
 from collections import deque
 from datetime import datetime
+import json
 import logging
 from pathlib import Path
 import os
 from threading import Lock
 from time import monotonic
+from typing import Any
 
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from .domain import Classification, LogEvent
 from .llm import GroqLLM
@@ -16,8 +18,10 @@ from .ml import MLClassifier
 from .observability import ProcessMetrics
 from .persistence import ClassificationStore
 from .service import ClassifierService
+from .triage import TriageInputError, run_triage
 
 logger = logging.getLogger(__name__)
+MAX_TRIAGE_REQUEST_BYTES = 1_000_000
 
 
 class ClassifyRequest(BaseModel):
@@ -31,6 +35,29 @@ class ClassifyResponse(BaseModel):
     confidence: float
     reason: str
     latency_ms: float
+
+
+class TriageLogInput(BaseModel):
+    text: str = Field(min_length=1, max_length=20_000)
+    timestamp: datetime | None = None
+
+
+class TriageRequest(BaseModel):
+    load_report: dict[str, Any]
+    logs: list[TriageLogInput] = Field(max_length=200)
+
+    @field_validator("load_report")
+    @classmethod
+    def validate_load_report_size(cls, value: dict[str, Any]) -> dict[str, Any]:
+        if len(value) > 100:
+            raise ValueError("load_report is limited to 100 top-level fields")
+        try:
+            encoded = json.dumps(value, separators=(",", ":"), allow_nan=False).encode("utf-8")
+        except (TypeError, ValueError) as exc:
+            raise ValueError("load_report must contain finite JSON values") from exc
+        if len(encoded) > 1_000_000:
+            raise ValueError("load_report is limited to 1 MB")
+        return value
 
 
 def build_service() -> ClassifierService:
@@ -88,7 +115,7 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
         started = metrics.start()
         status_code = 500
         try:
-            if request.url.path == "/classify" and not request_allowed():
+            if request.url.path in {"/classify", "/triage"} and not request_allowed():
                 status_code = 429
                 return JSONResponse(status_code=429, content={"detail": "the demo's shared request limit was reached; retry later"})
             response = await call_next(request)
@@ -98,8 +125,8 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
             route = request.scope.get("route")
             route_name = getattr(route, "path", "<unmatched>")
             # Early middleware responses happen before routing populates scope["route"].
-            if route is None and request.url.path == "/classify":
-                route_name = "/classify"
+            if route is None and request.url.path in {"/classify", "/triage"}:
+                route_name = request.url.path
             metrics.finish(f"{request.method} {route_name}", status_code, started)
 
     @app.get("/health")
@@ -119,6 +146,33 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
     @app.get("/metrics")
     def get_metrics() -> dict:
         return metrics.snapshot()
+
+    @app.post("/triage")
+    async def triage(request: Request) -> dict:
+        # Bound bytes while receiving the ASGI body, before JSON parsing or model
+        # validation. This also covers chunked requests without Content-Length.
+        raw_body = bytearray()
+        async for chunk in request.stream():
+            raw_body.extend(chunk)
+            if len(raw_body) > MAX_TRIAGE_REQUEST_BYTES:
+                raise HTTPException(
+                    status_code=413,
+                    detail="triage request body is limited to 1 MB",
+                )
+        try:
+            payload = json.loads(raw_body)
+            parsed_request = TriageRequest.model_validate(payload)
+        except (json.JSONDecodeError, UnicodeDecodeError, ValidationError) as exc:
+            raise HTTPException(status_code=422, detail="invalid triage request JSON or schema") from exc
+        try:
+            active_classifier = ensure_classifier()
+            events = [LogEvent(item.text, item.timestamp) for item in parsed_request.logs]
+            return run_triage(parsed_request.load_report, events, active_classifier.classify)
+        except TriageInputError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except Exception as exc:
+            logger.exception("triage workflow failed")
+            raise HTTPException(status_code=503, detail="triage workflow could not complete") from exc
 
     @app.post("/classify", response_model=ClassifyResponse)
     def classify(request: ClassifyRequest) -> ClassifyResponse:
