@@ -97,7 +97,7 @@ curl -s http://127.0.0.1:8000/triage \
   }'
 ~~~
 
-Inputs are bounded to 200 events per run and 20,000 characters per event. The Streamlit demo exposes the same workflow under **Incident triage** and accepts the JSON load-test report plus JSON Lines logs. The output includes a tool trace so each workflow stage is inspectable.
+Inputs are bounded to a 1 MB load-test report, 200 events per run, and 20,000 characters per event. The Streamlit demo exposes the same workflow under **Incident triage** and accepts the JSON load-test report plus JSON Lines logs. The output includes a tool trace so each workflow stage is inspectable.
 
 ## Evaluation and honest interpretation
 
