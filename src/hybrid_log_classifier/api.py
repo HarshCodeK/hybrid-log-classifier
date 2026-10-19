@@ -114,7 +114,7 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
         started = metrics.start()
         status_code = 500
         try:
-            if request.url.path == "/classify" and not request_allowed():
+            if request.url.path in {"/classify", "/triage"} and not request_allowed():
                 status_code = 429
                 return JSONResponse(status_code=429, content={"detail": "the demo's shared request limit was reached; retry later"})
             response = await call_next(request)
@@ -124,8 +124,8 @@ def create_app(service: ClassifierService | None = None) -> FastAPI:
             route = request.scope.get("route")
             route_name = getattr(route, "path", "<unmatched>")
             # Early middleware responses happen before routing populates scope["route"].
-            if route is None and request.url.path == "/classify":
-                route_name = "/classify"
+            if route is None and request.url.path in {"/classify", "/triage"}:
+                route_name = request.url.path
             metrics.finish(f"{request.method} {route_name}", status_code, started)
 
     @app.get("/health")
