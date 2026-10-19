@@ -90,3 +90,20 @@ def test_triage_warns_when_report_counts_disagree():
         RuleOnlyClassifier().classify,
     )
     assert any("does not equal requested_requests" in warning for warning in result["warnings"])
+
+
+
+def test_out_of_window_log_is_not_used_as_correlated_evidence():
+    outside_window = datetime(2026, 10, 16, 11, 0, tzinfo=timezone.utc)
+    result = run_triage(
+        report(),
+        [LogEvent("timeout service=checkout", outside_window)],
+        RuleOnlyClassifier().classify,
+    )
+
+    assert result["summary"]["timestamped_events_in_load_window"] == 0
+    assert result["summary"]["in_window_categories"] == {}
+    assert not any(
+        check["action"] == "Check health/readiness events and connection failures around the observed window."
+        for check in result["recommended_checks"]
+    )
