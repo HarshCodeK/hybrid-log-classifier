@@ -12,7 +12,7 @@ import math
 from typing import Any, Callable
 
 from .domain import Classification, LogEvent
-from .incidents import group_incidents
+from .incidents import Incident, group_incidents
 
 
 MAX_LOG_EVENTS = 200
@@ -150,7 +150,24 @@ def run_triage(
         "output_summary": {"categories": dict(category_counts)},
     })
 
-    incidents = group_incidents(classified)
+    # Only timestamped events may participate in temporal grouping. The generic
+    # grouping helper treats missing timestamps as "now", which would fabricate
+    # temporal proximity between undated and timestamped records.
+    timestamped_classified = [
+        (event, result) for event, result in classified if event.timestamp is not None
+    ]
+    undated_classified = [
+        (event, result) for event, result in classified if event.timestamp is None
+    ]
+    incidents = group_incidents(timestamped_classified)
+    incidents.extend(
+        Incident(
+            id=len(incidents) + index + 1,
+            category=result.category.value,
+            events=(event,),
+        )
+        for index, (event, result) in enumerate(undated_classified)
+    )
     incident_summaries = []
     for incident in incidents:
         known_timestamps = [
