@@ -163,3 +163,25 @@ def test_triage_endpoint_obeys_shared_request_limit(monkeypatch):
 
     assert client.post("/triage", json=payload).status_code == 200
     assert client.post("/triage", json=payload).status_code == 429
+
+
+def test_triage_rejects_oversized_raw_body_before_json_validation():
+    client = TestClient(create_app(FakeService()))
+    body = (
+        b'{"load_report":{"duration_seconds":10,"success_count":1,'
+        b'"error_count":0,"latency_ms":{},"status_codes":{},'
+        b'"transport_errors":{}},"logs":[]}'
+        + b" " * 1_000_001
+    )
+    response = client.post(
+        "/triage",
+        content=body,
+        headers={"content-type": "application/json"},
+    )
+    assert response.status_code == 413
+
+
+def test_triage_endpoint_rejects_undecodable_json():
+    client = TestClient(create_app(FakeService()))
+    response = client.post("/triage", content=b"{not-json")
+    assert response.status_code == 422
