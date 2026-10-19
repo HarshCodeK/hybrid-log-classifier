@@ -91,6 +91,13 @@ def validate_load_report(report: dict[str, Any]) -> dict[str, Any]:
     status_codes = _count_map(report.get("status_codes", {}), "status_codes")
     transport_errors = _count_map(report.get("transport_errors", {}), "transport_errors")
     timestamp = _parse_timestamp(report.get("timestamp_utc"))
+    if timestamp is not None:
+        try:
+            timestamp - timedelta(seconds=duration)
+        except OverflowError as exc:
+            raise TriageInputError(
+                "timestamp_utc is too early to form a load window of this duration"
+            ) from exc
 
     warnings: list[str] = []
     if requested is not None and success + errors != requested:
