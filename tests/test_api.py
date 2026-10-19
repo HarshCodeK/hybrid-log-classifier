@@ -104,7 +104,7 @@ def test_triage_endpoint_runs_bounded_workflow():
 def test_triage_endpoint_rejects_invalid_report():
     client = TestClient(create_app(FakeService()))
     response = client.post("/triage", json={
-        "load_report": {"duration_seconds": float("inf")},
+        "load_report": {"duration_seconds": -1},
         "logs": [],
     })
     assert response.status_code == 422
