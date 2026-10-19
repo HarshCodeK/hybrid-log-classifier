@@ -142,3 +142,24 @@ def test_triage_endpoint_rejects_oversized_load_report():
         "logs": [],
     })
     assert response.status_code == 422
+
+
+
+def test_triage_endpoint_obeys_shared_request_limit(monkeypatch):
+    monkeypatch.setenv("API_REQUESTS_PER_MINUTE", "1")
+    client = TestClient(create_app(FakeService()))
+    payload = {
+        "load_report": {
+            "timestamp_utc": "2026-10-16T12:05:00Z",
+            "duration_seconds": 300,
+            "success_count": 1,
+            "error_count": 0,
+            "latency_ms": {},
+            "status_codes": {"200": 1},
+            "transport_errors": {},
+        },
+        "logs": [],
+    }
+
+    assert client.post("/triage", json=payload).status_code == 200
+    assert client.post("/triage", json=payload).status_code == 429
