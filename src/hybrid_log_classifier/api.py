@@ -1,5 +1,6 @@
 from collections import deque
 from datetime import datetime
+import json
 import logging
 from pathlib import Path
 import os
@@ -9,7 +10,7 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from .domain import Classification, LogEvent
 from .llm import GroqLLM
@@ -43,6 +44,19 @@ class TriageLogInput(BaseModel):
 class TriageRequest(BaseModel):
     load_report: dict[str, Any]
     logs: list[TriageLogInput] = Field(max_length=200)
+
+    @field_validator("load_report")
+    @classmethod
+    def validate_load_report_size(cls, value: dict[str, Any]) -> dict[str, Any]:
+        if len(value) > 100:
+            raise ValueError("load_report is limited to 100 top-level fields")
+        try:
+            encoded = json.dumps(value, separators=(",", ":"), allow_nan=False).encode("utf-8")
+        except (TypeError, ValueError) as exc:
+            raise ValueError("load_report must contain finite JSON values") from exc
+        if len(encoded) > 1_000_000:
+            raise ValueError("load_report is limited to 1 MB")
+        return value
 
 
 def build_service() -> ClassifierService:
