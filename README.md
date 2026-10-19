@@ -2,95 +2,92 @@
 
 A small incident-intelligence service that routes application logs through the cheapest trustworthy classifier first.
 
-**Pipeline:** rules → local ML → optional LLM → `unknown` when the system cannot justify an answer.
+**Pipeline:** rules → local ML → optional LLM → unknown when the system cannot justify an answer.
 
-**Stack:** Python 3.11+, FastAPI, scikit-learn, Groq-compatible LLM API, SQLite, Streamlit.
+**Stack:** Python, FastAPI, scikit-learn, Groq-compatible LLM API, SQLite, Streamlit.
 
-## Problem and design goal
+## Why this project exists
 
-Operational teams receive logs ranging from obvious events such as failed login to ambiguous wording such as a checkout path becoming degraded. Sending every line to an LLM adds cost and a network dependency; rules alone cannot cover every phrasing variation.
+Operational teams receive logs ranging from obvious events such as failed login to ambiguous wording such as the checkout path feels degraded. A single LLM call for every line is unnecessarily expensive and introduces a network dependency. A rules-only system cannot handle wording variation.
 
-This project makes the decision boundary explicit: deterministic evidence first, a local statistical model second, and a remote model only when cheaper tiers abstain. The central idea is **abstention**: uncertainty should be visible and measurable instead of hidden behind a forced prediction.
+This project demonstrates an explicit decision boundary: deterministic evidence first, local statistical inference second, and a probabilistic model only when the cheaper tiers abstain. The ML tier is allowed to say “I do not know,” which makes escalation measurable instead of hiding uncertainty behind a forced prediction.
 
 ## Architecture
 
-`HTTP / Streamlit → input validation → rules → local ML → optional LLM → result + SQLite history`
+1. **Rules:** deterministic patterns handle narrow, high-confidence cases.
+2. **Local ML:** character TF-IDF plus logistic regression handles wording variation and abstains below a configurable confidence threshold.
+3. **Optional LLM:** Groq is called only after ML abstention. Provider responses are schema-validated; provider failures become unknown, not a fabricated classification.
+4. **Persistence:** SQLite records classification outcomes and latency, retaining the newest 10,000 rows by default. WAL plus a busy timeout helps concurrent writes on one host; SQLite is not a multi-replica database. The stored row includes the submitted log text, so use synthetic/de-identified logs only and do not expose this unauthenticated demo to sensitive production logs.
+5. **Interfaces:** FastAPI exposes the API, while Streamlit provides an interactive demo.
 
-- **Rules:** deterministic handling for supported operational patterns.
-- **Local ML:** character TF-IDF features with logistic regression; a configurable confidence threshold allows abstention.
-- **LLM fallback:** optional, schema-validated, bounded input; provider failure does not manufacture a confident label.
-- **SQLite:** local classification history, not a distributed system of record.
-- **FastAPI:** `GET /health` and `POST /classify`.
-- **Streamlit:** demonstration interface.
-
-See `docs/ARCHITECTURE.md` and `docs/THREAT_MODEL.md` for decisions and boundaries.
+No vector database or orchestration framework is used because this problem does not require retrieval or complex workflow orchestration.
 
 ## Quickstart
 
-Requires Python 3.11 or newer.
+Requires Python 3.11+.
 
-```bash
+~~~bash
 python -m venv .venv
+# macOS/Linux:
 source .venv/bin/activate
-pip install -e ".[test]"
+# Windows PowerShell:
+# .venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 PYTHONPATH=src python scripts/train.py
-PYTHONPATH=src pytest
+PYTHONPATH=.:src pytest
 PYTHONPATH=src python scripts/evaluate.py
-PYTHONPATH=src uvicorn hybrid_log_classifier.api:app --host 0.0.0.0 --port 8000
-```
+PYTHONPATH=src uvicorn hybrid_log_classifier.api:app --reload
+~~~
 
-Open `http://localhost:8000/docs` for the API schema. In a second terminal, run the UI:
+In another terminal, use PYTHONPATH=src streamlit run app.py for the UI.
 
-```bash
-PYTHONPATH=src streamlit run app.py
-```
+Without GROQ_API_KEY, rules and ML still work. ML abstentions return unknown. The model is generated locally from the small included corpus; it is not production-trained.
 
-The LLM is optional. Without `GROQ_API_KEY`, rule and ML paths still work; an ML abstention becomes `unknown`. Configuration includes `MODEL_PATH`, `DATABASE_PATH`, and `ML_CONFIDENCE_THRESHOLD`.
+## API
 
-## Evaluation: what the numbers mean
+- GET /health: liveness only.
+- GET /ready: initializes the classifier and checks readiness; use it for deployment health checks.
+- GET /metrics: process-local request counters, status codes, in-flight count, and recent latency percentiles.
+- POST /classify: accepts {"text": "failed login user=demo"} and returns category, tier, confidence, reason, and service-observed classification latency.
+- GET /docs: interactive API documentation from FastAPI.
 
-The included dataset is synthetic and small. The current grouped five-fold evaluation reports:
+Example:
 
-| Metric | Result |
-|---|---:|
-| Grouped accuracy | 0.489 |
-| Grouped macro F1 | 0.422 |
-| Accepted coverage at confidence 0.30 | 0.305 |
-| Accepted accuracy at confidence 0.30 | 0.920 |
-| Accepted macro F1 at confidence 0.30 | 0.873 |
+~~~bash
+curl -s http://127.0.0.1:8000/classify \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"failed login user=demo"}'
+~~~
 
-At this threshold, the ML tier accepts about 30.5% of held-out examples and is correct on about 92.0% of accepted examples in this specific evaluation. Coverage and accepted accuracy must be considered together: high selective accuracy is not useful if coverage is ignored.
+## Evaluation and honest interpretation
 
-These are **dataset evaluation results, not production accuracy or load-test results**. Regenerate them after changing data, features, model, or threshold. Do not claim 99% accuracy without a representative held-out corpus and a reproducible evaluation.
+The included data is synthetic and small: 50 labeled examples across five categories. In the GitHub Actions evaluation run for commit `4eb0fe60a8ff0130ab86c8f3bb1175ca82385aa3` (Python 3.12; dependency versions resolved by CI at run time), grouped five-fold evaluation reported accuracy 0.580 and macro F1 0.539 over held-out examples. At confidence threshold 0.30, accepted coverage was 0.362, accepted accuracy 0.810, and accepted macro F1 0.727. These values are specific to that code/data/dependency run, not production claims; re-run `PYTHONPATH=src python scripts/evaluate.py` before publishing updated numbers after any change.
 
-## Reliability, testing, and security
+## Reproducible load testing
 
-The repository includes unit, integration, API, evaluation, and build checks. CI trains the model, runs tests and grouped evaluation, compiles sources, checks whitespace, builds the Docker image, starts the container, checks health, and classifies a smoke-test log. A live Groq request is excluded from public CI because it needs a secret and creates an external cost dependency; the provider boundary is tested with deterministic fakes.
+See docs/RELIABILITY_LAB.md. Start small and ramp:
 
-Input sizes are bounded, provider output is schema-validated, failures fail closed, and secrets are read from environment variables rather than written to SQLite. These are application-level controls, not complete prompt-injection protection or public-service hardening.
+~~~bash
+python scripts/load_test.py --base-url http://127.0.0.1:8000 --requests 100 --concurrency 10 --output artifacts/load-10.json
+curl http://127.0.0.1:8000/metrics
+~~~
 
-## Capacity and load testing
+The report captures client-observed throughput, p50/p95/p99 latency, error rate, status codes, transport errors, and bytes received. It does not claim real users, server resource usage, or capacity beyond the tested host and workload. Keep both the first failing run and the retest after remediation.
 
-No concurrent-user capacity claim is made by this README. A credible benchmark must record the exact commit, host/plan, Python and dependency versions, dataset/model artifact, test duration, concurrency model, request mix, warm-up, and whether the LLM path is enabled.
+## Deployment
 
-For each run, measure throughput, p50/p95/p99 latency, HTTP error rate, timeouts, CPU/RAM, and classification outcomes by tier. Test health and classification endpoints separately; distinguish local rules/ML traffic from remote-LLM traffic because their bottlenecks and costs differ. Repeat the same workload after each mitigation and publish raw results plus the command used to reproduce them. Simulated clients are load-test traffic, not real users.
+The root render.yaml defines a free Render web service for the API. Free services sleep after inactivity and use ephemeral local storage, so this is a public demo, not 24/7 production hosting. Deploy the Streamlit UI separately through Streamlit Community Cloud using the root app.py entry point. The app bootstraps its small local model when the artifact is absent.
 
-Likely first bottlenecks to investigate are synchronous request execution, SQLite write contention, model initialization, and provider latency/rate limits. These are hypotheses until measured. The current implementation has no API authentication or rate limiting and is not safe to expose as an unrestricted public service.
+## Testing
 
-## Honest limitations
+CI trains the model, runs unit/API/service tests and grouped evaluation, compiles Python source, checks whitespace, builds the Docker image, starts it, checks health, and classifies a smoke-test log. Public CI avoids real provider calls, so tests do not require secrets or incur API cost.
 
-- Training data is synthetic and small; real-world generalization is unproven.
-- Rule and entity coverage is intentionally narrow.
-- SQLite is intended for local/single-process history; multi-instance deployment needs a different persistence design.
-- There is no API authentication or rate limiting.
-- Prompt injection through untrusted log text is not fully solved.
-- Incident grouping is heuristic.
-- No production availability, throughput, or maximum-concurrency guarantee is claimed.
+## Security and limitations
 
-## Interview preparation
+Input lengths are bounded, provider output is validated, secrets come from environment variables, and the LLM prompt treats log text as untrusted data. These controls do not amount to complete prompt-injection protection.
 
-`docs/INTERVIEW_QA.md` covers product fit, architecture, data leakage, abstention, reliability, security, scaling, testing, and trade-offs. Answers describe the current repository, not an idealized future version.
+Known limitations: synthetic and narrow training data; limited rules/entity coverage; SQLite intended for local or single-process use; no end-user authentication; heuristic incident grouping; optional provider availability and cost; and no production reliability claim. `/classify` has a shared process-local `API_REQUESTS_PER_MINUTE` cap (default 120/minute); when `GROQ_API_KEY` is configured, the effective cap is also limited by `LLM_REQUESTS_PER_MINUTE` (default 30/minute) to reduce accidental provider spend. The service-layer LLM ceiling also covers the Streamlit UI path, which calls the classifier directly instead of going through the FastAPI middleware. This is not per-user or distributed rate limiting.
 
 ## License
 
-MIT. See `LICENSE`.
+MIT. See LICENSE.

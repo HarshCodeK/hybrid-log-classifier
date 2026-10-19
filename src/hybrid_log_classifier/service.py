@@ -1,4 +1,7 @@
-from time import perf_counter
+from collections import deque
+import os
+from threading import Lock
+from time import monotonic, perf_counter
 
 import httpx
 
@@ -7,6 +10,25 @@ from .llm import LLMClassifier
 from .ml import MLClassifier
 from .persistence import ClassificationStore
 from .rules import classify
+
+
+_LLM_HITS: deque[float] = deque()
+_LLM_HITS_LOCK = Lock()
+
+
+def _llm_request_allowed() -> bool:
+    try:
+        limit = max(1, int(os.getenv("LLM_REQUESTS_PER_MINUTE", "30")))
+    except ValueError:
+        limit = 30
+    now = monotonic()
+    with _LLM_HITS_LOCK:
+        while _LLM_HITS and now - _LLM_HITS[0] >= 60:
+            _LLM_HITS.popleft()
+        if len(_LLM_HITS) >= limit:
+            return False
+        _LLM_HITS.append(now)
+        return True
 
 
 class ClassifierService:
@@ -32,11 +54,14 @@ class ClassifierService:
         if category is not None:
             result = Classification(category, ClassificationTier.ML, confidence, "local model cleared the confidence threshold", self._elapsed(started))
         elif self._llm is not None:
-            try:
-                output = self._llm.classify(event.text)
-                result = Classification(output.category, ClassificationTier.LLM, output.confidence, output.reason, self._elapsed(started))
-            except (RuntimeError, ValueError, httpx.HTTPError):
-                result = Classification(Category.UNKNOWN, ClassificationTier.UNKNOWN, confidence, "LLM classification failed; request was not guessed", self._elapsed(started))
+            if not _llm_request_allowed():
+                result = Classification(Category.UNKNOWN, ClassificationTier.UNKNOWN, confidence, "LLM escalation limit reached; no provider request was made", self._elapsed(started))
+            else:
+                try:
+                    output = self._llm.classify(event.text)
+                    result = Classification(output.category, ClassificationTier.LLM, output.confidence, output.reason, self._elapsed(started))
+                except (RuntimeError, ValueError, httpx.HTTPError):
+                    result = Classification(Category.UNKNOWN, ClassificationTier.UNKNOWN, confidence, "LLM classification failed; request was not guessed", self._elapsed(started))
         else:
             result = Classification(Category.UNKNOWN, ClassificationTier.UNKNOWN, confidence, "local model abstained; no LLM provider was configured", self._elapsed(started))
         self._save(event.text, result)

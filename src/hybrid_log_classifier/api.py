@@ -1,15 +1,23 @@
+from collections import deque
 from datetime import datetime
+import logging
 from pathlib import Path
 import os
+from threading import Lock
+from time import monotonic
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from .domain import Classification, LogEvent
 from .llm import GroqLLM
 from .ml import MLClassifier
+from .observability import ProcessMetrics
 from .persistence import ClassificationStore
 from .service import ClassifierService
+
+logger = logging.getLogger(__name__)
 
 
 class ClassifyRequest(BaseModel):
@@ -37,22 +45,89 @@ def build_service() -> ClassifierService:
 
 
 def create_app(service: ClassifierService | None = None) -> FastAPI:
-    app = FastAPI(title="Hybrid Log Classifier", version="0.1.0")
+    app = FastAPI(title="Hybrid Log Classifier", version="0.2.0")
     classifier = service
+    classifier_lock = Lock()
+    metrics = ProcessMetrics()
+    excluded_metrics_paths = {"/health", "/ready", "/metrics"}
+    provider_hits: deque[float] = deque()
+    provider_hits_lock = Lock()
+
+    def request_allowed() -> bool:
+        try:
+            limit = max(1, int(os.getenv("API_REQUESTS_PER_MINUTE", "120")))
+        except ValueError:
+            limit = 120
+        if os.getenv("GROQ_API_KEY"):
+            try:
+                llm_limit = max(1, int(os.getenv("LLM_REQUESTS_PER_MINUTE", "30")))
+            except ValueError:
+                llm_limit = 30
+            limit = min(limit, llm_limit)
+        now = monotonic()
+        with provider_hits_lock:
+            while provider_hits and now - provider_hits[0] >= 60:
+                provider_hits.popleft()
+            if len(provider_hits) >= limit:
+                return False
+            provider_hits.append(now)
+            return True
+
+    def ensure_classifier() -> ClassifierService:
+        nonlocal classifier
+        if classifier is None:
+            with classifier_lock:
+                if classifier is None:
+                    classifier = build_service()
+        return classifier
+
+    @app.middleware("http")
+    async def collect_request_metrics(request, call_next):
+        if request.url.path in excluded_metrics_paths:
+            return await call_next(request)
+        started = metrics.start()
+        status_code = 500
+        try:
+            if request.url.path == "/classify" and not request_allowed():
+                status_code = 429
+                return JSONResponse(status_code=429, content={"detail": "the demo's shared request limit was reached; retry later"})
+            response = await call_next(request)
+            status_code = response.status_code
+            return response
+        finally:
+            route = request.scope.get("route")
+            route_name = getattr(route, "path", "<unmatched>")
+            # Early middleware responses happen before routing populates scope["route"].
+            if route is None and request.url.path == "/classify":
+                route_name = "/classify"
+            metrics.finish(f"{request.method} {route_name}", status_code, started)
 
     @app.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok", "llm": "configured" if os.getenv("GROQ_API_KEY") else "disabled"}
 
+    @app.get("/ready")
+    def ready(response: Response) -> dict[str, str]:
+        try:
+            ensure_classifier()
+            return {"status": "ready"}
+        except Exception:
+            logger.exception("readiness check failed")
+            response.status_code = 503
+            return {"status": "not_ready"}
+
+    @app.get("/metrics")
+    def get_metrics() -> dict:
+        return metrics.snapshot()
+
     @app.post("/classify", response_model=ClassifyResponse)
     def classify(request: ClassifyRequest) -> ClassifyResponse:
-        nonlocal classifier
-        if classifier is None:
-            try:
-                classifier = build_service()
-            except RuntimeError as exc:
-                raise HTTPException(status_code=503, detail=str(exc)) from exc
-        result: Classification = classifier.classify(LogEvent(request.text, request.timestamp))
+        try:
+            active_classifier = ensure_classifier()
+        except Exception as exc:
+            logger.exception("classifier initialization failed")
+            raise HTTPException(status_code=503, detail="classifier is not ready") from exc
+        result: Classification = active_classifier.classify(LogEvent(request.text, request.timestamp))
         return ClassifyResponse(
             category=result.category.value,
             tier=result.tier.value,
