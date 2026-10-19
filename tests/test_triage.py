@@ -127,3 +127,12 @@ def test_undated_events_are_not_temporally_grouped():
     assert result["summary"]["incident_count"] == 3
     assert sorted(incident["event_count"] for incident in result["incidents"]) == [1, 1, 1]
     assert sum(incident["start_utc"] is None for incident in result["incidents"]) == 2
+
+
+def test_triage_rejects_timestamp_that_underflows_load_window():
+    result = report(
+        timestamp_utc="0001-01-01T00:00:00Z",
+        duration_seconds=1,
+    )
+    with pytest.raises(TriageInputError, match="too early to form a load window"):
+        run_triage(result, [], RuleOnlyClassifier().classify)
