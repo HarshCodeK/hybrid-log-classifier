@@ -110,17 +110,20 @@ def test_out_of_window_log_is_not_used_as_correlated_evidence():
 
 
 
-def test_undated_event_is_not_grouped_with_timestamped_event():
+def test_undated_events_are_not_temporally_grouped():
     timestamp = datetime(2026, 10, 16, 12, 2, tzinfo=timezone.utc)
     result = run_triage(
         report(),
         [
             LogEvent("timeout service=checkout", timestamp),
             LogEvent("timeout service=checkout"),
+            LogEvent("timeout service=checkout"),
         ],
         RuleOnlyClassifier().classify,
     )
 
-    assert result["summary"]["incident_count"] == 2
-    assert sorted(incident["event_count"] for incident in result["incidents"]) == [1, 1]
-    assert sum(incident["start_utc"] is None for incident in result["incidents"]) == 1
+    # The timestamped event may form a temporal incident. Undated events each
+    # remain separate because no temporal relationship can be established.
+    assert result["summary"]["incident_count"] == 3
+    assert sorted(incident["event_count"] for incident in result["incidents"]) == [1, 1, 1]
+    assert sum(incident["start_utc"] is None for incident in result["incidents"]) == 2
