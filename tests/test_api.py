@@ -127,7 +127,7 @@ def test_triage_endpoint_rejects_more_than_200_logs():
 
 
 
-def test_triage_endpoint_rejects_oversized_load_report():
+def test_triage_endpoint_rejects_oversized_request_body():
     client = TestClient(create_app(FakeService()))
     response = client.post("/triage", json={
         "load_report": {
@@ -141,7 +141,7 @@ def test_triage_endpoint_rejects_oversized_load_report():
         },
         "logs": [],
     })
-    assert response.status_code == 422
+    assert response.status_code == 413
 
 
 
