@@ -151,16 +151,20 @@ def run_triage(
     })
 
     incidents = group_incidents(classified)
-    incident_summaries = [
-        {
+    incident_summaries = []
+    for incident in incidents:
+        known_timestamps = [
+            event.normalized_timestamp()
+            for event in incident.events
+            if event.timestamp is not None
+        ]
+        incident_summaries.append({
             "id": incident.id,
             "category": incident.category,
             "event_count": len(incident.events),
-            "start_utc": min(event.normalized_timestamp() for event in incident.events).isoformat(),
-            "end_utc": max(event.normalized_timestamp() for event in incident.events).isoformat(),
-        }
-        for incident in incidents
-    ]
+            "start_utc": min(known_timestamps).isoformat() if known_timestamps else None,
+            "end_utc": max(known_timestamps).isoformat() if known_timestamps else None,
+        })
     trace.append({
         "tool": "group_incidents",
         "status": "completed",
