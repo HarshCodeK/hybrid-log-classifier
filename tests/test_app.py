@@ -1,6 +1,8 @@
 import sqlite3
 from unittest.mock import patch
 
+import numpy as np
+
 from fastapi.testclient import TestClient
 
 from hybrid_log_classifier.api import app, get_classifier
@@ -60,7 +62,7 @@ def test_ml_route_for_unmatched_but_in_vocabulary_text():
     probabilities = [0.01] * len(CATEGORIES)
     probabilities[performance_index] = 0.91
     # Keep this a deterministic routing test; model training is tested separately above.
-    with patch.object(model.named_steps["classifier"], "predict_proba", return_value=[probabilities]):
+    with patch.object(model.named_steps["classifier"], "predict_proba", return_value=np.array([probabilities])):
         result = classifier.classify("The endpoint response time became sluggish during peak traffic")
     assert result.tier == "ml"
     assert result.category == "performance"
