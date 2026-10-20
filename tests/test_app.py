@@ -1,3 +1,4 @@
+import sqlite3
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
@@ -94,15 +95,28 @@ def test_groq_failure_returns_unknown(monkeypatch):
     assert result.tier == "llm_error"
 
 
-def test_api_classify(tmp_path, monkeypatch):
-    monkeypatch.setenv("DATABASE_PATH", str(tmp_path / "classifications.db"))
+def test_api_classify_and_persist_result(tmp_path, monkeypatch):
+    database_path = tmp_path / "classifications.db"
+    monkeypatch.setenv("DATABASE_PATH", str(database_path))
     get_classifier.cache_clear()
+
     response = TestClient(app).post("/classify", json={"text": "Database deadlock detected"})
+
     assert response.status_code == 200, response.text
     body = response.json()
     assert body["category"] == "database"
     assert body["tier"] == "regex"
     assert body["latency_ms"] >= 0
+
+    with sqlite3.connect(database_path) as connection:
+        row = connection.execute(
+            "SELECT log_text, category, tier, confidence, latency_ms FROM classifications"
+        ).fetchone()
+
+    assert row is not None
+    assert row[0:3] == ("Database deadlock detected", "database", "regex")
+    assert 0 <= row[3] <= 1
+    assert row[4] >= 0
     get_classifier.cache_clear()
 
 
