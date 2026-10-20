@@ -151,6 +151,20 @@ class LogClassifier:
         return category, confidence, reason
 
     @staticmethod
-    def _result(category: str, tier: str, confidence: float, reason: str, started: float) -> Classification:
-        categories = (category,) if category != "unknown" else ("unknown",)
-        return Classification(category, tier, round(confidence, 4), reason, round((time.perf_counter() - started) * 1000, 2), categories)
+    def _result(
+        category: str,
+        tier: str,
+        confidence: float,
+        reason: str,
+        started: float,
+        categories: tuple[str, ...] | None = None,
+    ) -> Classification:
+        selected = categories if categories is not None else (category,)
+        return Classification(
+            category,
+            tier,
+            round(confidence, 4),
+            reason,
+            round((time.perf_counter() - started) * 1000, 2),
+            selected,
+        )
