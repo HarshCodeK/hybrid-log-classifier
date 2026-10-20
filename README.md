@@ -71,7 +71,7 @@ There is a real ML model in this project. It is not a pretrained model downloade
 - Why use ML: regex rules are clear and fast but depend on known phrases. TF-IDF plus Logistic Regression can recognize related word combinations even when the exact regex phrase is absent, without requiring a large neural model.
 - Limitation: training successfully does not prove accuracy. The dataset is synthetic, and the model has not been validated on a representative real-world log dataset.
 
-The app shows the selected stage and confidence. If ML confidence is below 60%, the reason includes the actual score and the configured threshold before Groq fallback is attempted.
+The app shows the selected stage and confidence. When the model has learned terms but its top score is below 60%, the result reason includes that exact ML score and threshold before the Groq response. If no learned terms are present, the reason says so instead.
 
 ## Run it on Windows
 

@@ -103,7 +103,11 @@ class LogClassifier:
         if self.llm_enabled and self.api_key:
             try:
                 category, llm_confidence, reason = self._classify_with_groq(text)
-                return self._result(category, "llm", llm_confidence, reason, started)
+                if has_known_terms:
+                    routing_reason = f"ML top confidence was {confidence:.1%}, below the {self.threshold:.0%} threshold. Groq fallback: {reason}"
+                else:
+                    routing_reason = f"No terms from the trained ML vocabulary were found. Groq fallback: {reason}"
+                return self._result(category, "llm", llm_confidence, routing_reason, started)
             except (httpx.HTTPError, ValueError, KeyError, TypeError, IndexError, json.JSONDecodeError):
                 return self._result("unknown", "llm_error", confidence, "Groq escalation failed or returned invalid output; abstained instead of guessing.", started)
 
