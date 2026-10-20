@@ -31,6 +31,27 @@ def test_regex_classification_bypasses_ml_and_llm():
     assert result.latency_ms >= 0
 
 
+def test_regex_rules_cover_all_ten_categories():
+    classifier = LogClassifier(llm_enabled=False)
+    prompts = {
+        "security": "Failed login for user=alice",
+        "availability": "Health check failed for checkout",
+        "performance": "P95 latency spike exceeded alert limit",
+        "resource_exhaustion": "OOMKilled: container exceeded memory limit",
+        "database": "Database deadlock detected",
+        "network": "DNS resolution failed for api.internal",
+        "deployment": "Rollout failed for payments",
+        "data_integrity": "Checksum mismatch for stored object",
+        "configuration": "Missing environment variable PAYMENT_SECRET",
+        "dependency_failure": "Circuit breaker opened after upstream failures",
+    }
+    assert set(prompts) == set(CATEGORIES)
+    for expected, prompt in prompts.items():
+        result = classifier.classify(prompt)
+        assert result.category == expected, (prompt, result)
+        assert result.tier == "regex", (prompt, result)
+
+
 def test_ml_route_for_unmatched_but_in_vocabulary_text():
     model = train_model()
     classifier = LogClassifier(model=model, llm_enabled=False)
