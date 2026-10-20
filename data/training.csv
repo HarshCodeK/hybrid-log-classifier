@@ -1,122 +1,122 @@
 text,category
-"security",Repeated failed login attempts detected for account alice
-"security",Authentication failure while verifying user credentials
-"security",Unauthorized access attempt against admin endpoint
-"security",Permission denied for user bob reading restricted file
-"security",Invalid access token rejected by gateway
-"security",Suspicious login from a new geographic location
-"security",Brute force pattern detected across multiple accounts
-"security",Privilege escalation attempt blocked by policy
-"security",Expired session token used for protected resource
-"security",MFA verification failed repeatedly for operator
-"security",Unexpected administrator role assignment recorded
-"security",Credential validation rejected the supplied password
-"availability",Checkout service unavailable during request handling
-"availability",Health check failed for the order processor
-"availability",The payments service is down and cannot accept requests
-"availability",Backend service not responding to readiness requests
-"availability",Availability probe failed three consecutive times
-"availability",Customer-facing endpoint outage detected by monitor
-"availability",Application returned no healthy instances
-"availability",All replicas failed to answer incoming requests
-"availability",The service stopped responding after startup
-"availability",Traffic monitor reports a sustained service interruption
-"availability",Request handler returned an unavailable status
-"availability",No healthy target was found in the service pool
-"availability",Application endpoint is failing liveness checks
-"performance",API response latency increased during peak traffic
-"performance",The endpoint response time became sluggish under load
-"performance",P95 request duration rose above the normal baseline
-"performance",Throughput dropped while request processing slowed
-"performance",Queue wait time is increasing for incoming work
-"performance",The application is responding slowly after each request
-"performance",Long-running requests are consuming worker capacity
-"performance",Request processing duration exceeded the service objective
-"performance",Tail latency is elevated across several endpoints
-"performance",CPU scheduling delays increased request duration
-"performance",Users report sluggish page rendering during traffic spikes
-"performance",The service takes much longer to finish each operation
-"resource_exhaustion",Container was terminated after exhausting available memory
-"resource_exhaustion",Host RAM and swap are nearly consumed by the process
-"resource_exhaustion",Filesystem has insufficient free capacity for new writes
-"resource_exhaustion",The workload is consuming nearly all available CPU cores
-"resource_exhaustion",Memory allocation failed while building the response
-"resource_exhaustion",Worker process reached its configured memory ceiling
-"resource_exhaustion",Temporary storage capacity is exhausted
-"resource_exhaustion",The machine has no remaining disk capacity
-"resource_exhaustion",Process resource limit prevented another thread from starting
-"resource_exhaustion",Heap pressure is forcing repeated garbage collection
-"resource_exhaustion",Available file descriptors are nearly depleted
-"resource_exhaustion",Container was killed because its resource quota was exceeded
-"database",Database transaction was blocked by a lock conflict
-"database",Connection pool has no idle connections available
-"database",SQL query failed while reading the customer record
-"database",Database server rejected a new client session
-"database",Transaction commit failed due to a serialization conflict
-"database",Relational store reports an invalid SQL statement
-"database",Database connection timed out during query execution
-"database",The query planner selected an unexpectedly expensive plan
-"database",Database authentication failed for the application role
-"database",Write operation failed because the database was read only
-"database",The database reports too many active sessions
-"database",A transaction was rolled back after a storage error
-"network",Name resolution failed for the internal API hostname
-"network",Remote peer reset the socket during data transfer
-"network",The route to the target host is unavailable
-"network",TLS negotiation failed before the request was sent
-"network",Packet delivery is unstable across the network path
-"network",The client cannot establish a TCP session with the host
-"network",Network interface reports repeated transmission errors
-"network",A proxy connection was interrupted before response headers
-"network",The hostname cannot be resolved by the configured resolver
-"network",Connection attempts fail before reaching the remote service
-"network",Network path exhibits excessive packet retransmission
-"network",Socket operation ended before receiving the remote response
-"deployment",New application release failed during rollout
-"deployment",Container image could not be pulled by the node
-"deployment",The deployment controller rolled back the new version
-"deployment",A pod repeatedly restarts after the release begins
-"deployment",New version did not become ready after deployment
-"deployment",Release process stopped before all replicas were updated
-"deployment",Startup command exited unsuccessfully in the new image
-"deployment",The deployment manifest could not be applied
-"deployment",Canary version failed the rollout health gate
-"deployment",The release controller cannot progress to the next step
-"deployment",Updated container fails during application startup
-"deployment",Previous version was restored after rollout validation
-"data_integrity",Stored object digest differs from its expected checksum
-"data_integrity",A record contains values that violate the schema
-"data_integrity",Duplicate primary key found while importing transactions
-"data_integrity",The payload failed structural validation before storage
-"data_integrity",Persisted data appears corrupted after retrieval
-"data_integrity",A required field is missing from the serialized record
-"data_integrity",The integrity scan found inconsistent table contents
-"data_integrity",Data migration produced conflicting identifier values
-"data_integrity",The imported document failed schema conformance checks
-"data_integrity",A stored blob does not match the recorded digest
-"data_integrity",Referential consistency check found an orphan record
-"data_integrity",The data parser rejected a malformed serialized value
-"configuration",Required environment variable was not supplied at startup
-"configuration",Application settings could not be parsed from the config file
-"configuration",The configured endpoint URL is not a valid URL
-"configuration",Runtime setting contains an unsupported value
-"configuration",The service started with an invalid feature flag value
-"configuration",Configuration file could not be found at the expected path
-"configuration",Secret reference is missing from the runtime environment
-"configuration",Conflicting settings were loaded from two sources
-"configuration",The port setting is outside the allowed range
-"configuration",Application initialization failed while loading its settings
-"configuration",The configured log level is not recognized
-"configuration",A required option was omitted from the deployment settings
-"dependency_failure",The upstream payment provider returned an unexpected failure
-"dependency_failure",Message broker is unavailable to the event consumer
-"dependency_failure",The circuit breaker opened after repeated remote call failures
-"dependency_failure",Cache service connection could not be established
-"dependency_failure",Third party API requests are failing intermittently
-"dependency_failure",Queue consumer cannot reach the configured broker
-"dependency_failure",Remote identity provider did not complete authentication
-"dependency_failure",A required service dependency failed its readiness check
-"dependency_failure",External geocoding provider exceeded its error budget
-"dependency_failure",Cache backend is refusing new client sessions
-"dependency_failure",Event processing is delayed because the broker is unhealthy
-"dependency_failure",Remote service returned errors for repeated dependency calls
+"Repeated failed login attempts detected for account alice",security
+"Authentication failure while verifying user credentials",security
+"Unauthorized access attempt against admin endpoint",security
+"Permission denied for user bob reading restricted file",security
+"Invalid access token rejected by gateway",security
+"Suspicious login from a new geographic location",security
+"Brute force pattern detected across multiple accounts",security
+"Privilege escalation attempt blocked by policy",security
+"Expired session token used for protected resource",security
+"MFA verification failed repeatedly for operator",security
+"Unexpected administrator role assignment recorded",security
+"Credential validation rejected the supplied password",security
+"Checkout service unavailable during request handling",availability
+"Health check failed for the order processor",availability
+"The payments service is down and cannot accept requests",availability
+"Backend service not responding to readiness requests",availability
+"Availability probe failed three consecutive times",availability
+"Customer-facing endpoint outage detected by monitor",availability
+"Application returned no healthy instances",availability
+"All replicas failed to answer incoming requests",availability
+"The service stopped responding after startup",availability
+"Traffic monitor reports a sustained service interruption",availability
+"Request handler returned an unavailable status",availability
+"No healthy target was found in the service pool",availability
+"Application endpoint is failing liveness checks",availability
+"API response latency increased during peak traffic",performance
+"The endpoint response time became sluggish under load",performance
+"P95 request duration rose above the normal baseline",performance
+"Throughput dropped while request processing slowed",performance
+"Queue wait time is increasing for incoming work",performance
+"The application is responding slowly after each request",performance
+"Long-running requests are consuming worker capacity",performance
+"Request processing duration exceeded the service objective",performance
+"Tail latency is elevated across several endpoints",performance
+"CPU scheduling delays increased request duration",performance
+"Users report sluggish page rendering during traffic spikes",performance
+"The service takes much longer to finish each operation",performance
+"Container was terminated after exhausting available memory",resource_exhaustion
+"Host RAM and swap are nearly consumed by the process",resource_exhaustion
+"Filesystem has insufficient free capacity for new writes",resource_exhaustion
+"The workload is consuming nearly all available CPU cores",resource_exhaustion
+"Memory allocation failed while building the response",resource_exhaustion
+"Worker process reached its configured memory ceiling",resource_exhaustion
+"Temporary storage capacity is exhausted",resource_exhaustion
+"The machine has no remaining disk capacity",resource_exhaustion
+"Process resource limit prevented another thread from starting",resource_exhaustion
+"Heap pressure is forcing repeated garbage collection",resource_exhaustion
+"Available file descriptors are nearly depleted",resource_exhaustion
+"Container was killed because its resource quota was exceeded",resource_exhaustion
+"Database transaction was blocked by a lock conflict",database
+"Connection pool has no idle connections available",database
+"SQL query failed while reading the customer record",database
+"Database server rejected a new client session",database
+"Transaction commit failed due to a serialization conflict",database
+"Relational store reports an invalid SQL statement",database
+"Database connection timed out during query execution",database
+"The query planner selected an unexpectedly expensive plan",database
+"Database authentication failed for the application role",database
+"Write operation failed because the database was read only",database
+"The database reports too many active sessions",database
+"A transaction was rolled back after a storage error",database
+"Name resolution failed for the internal API hostname",network
+"Remote peer reset the socket during data transfer",network
+"The route to the target host is unavailable",network
+"TLS negotiation failed before the request was sent",network
+"Packet delivery is unstable across the network path",network
+"The client cannot establish a TCP session with the host",network
+"Network interface reports repeated transmission errors",network
+"A proxy connection was interrupted before response headers",network
+"The hostname cannot be resolved by the configured resolver",network
+"Connection attempts fail before reaching the remote service",network
+"Network path exhibits excessive packet retransmission",network
+"Socket operation ended before receiving the remote response",network
+"New application release failed during rollout",deployment
+"Container image could not be pulled by the node",deployment
+"The deployment controller rolled back the new version",deployment
+"A pod repeatedly restarts after the release begins",deployment
+"New version did not become ready after deployment",deployment
+"Release process stopped before all replicas were updated",deployment
+"Startup command exited unsuccessfully in the new image",deployment
+"The deployment manifest could not be applied",deployment
+"Canary version failed the rollout health gate",deployment
+"The release controller cannot progress to the next step",deployment
+"Updated container fails during application startup",deployment
+"Previous version was restored after rollout validation",deployment
+"Stored object digest differs from its expected checksum",data_integrity
+"A record contains values that violate the schema",data_integrity
+"Duplicate primary key found while importing transactions",data_integrity
+"The payload failed structural validation before storage",data_integrity
+"Persisted data appears corrupted after retrieval",data_integrity
+"A required field is missing from the serialized record",data_integrity
+"The integrity scan found inconsistent table contents",data_integrity
+"Data migration produced conflicting identifier values",data_integrity
+"The imported document failed schema conformance checks",data_integrity
+"A stored blob does not match the recorded digest",data_integrity
+"Referential consistency check found an orphan record",data_integrity
+"The data parser rejected a malformed serialized value",data_integrity
+"Required environment variable was not supplied at startup",configuration
+"Application settings could not be parsed from the config file",configuration
+"The configured endpoint URL is not a valid URL",configuration
+"Runtime setting contains an unsupported value",configuration
+"The service started with an invalid feature flag value",configuration
+"Configuration file could not be found at the expected path",configuration
+"Secret reference is missing from the runtime environment",configuration
+"Conflicting settings were loaded from two sources",configuration
+"The port setting is outside the allowed range",configuration
+"Application initialization failed while loading its settings",configuration
+"The configured log level is not recognized",configuration
+"A required option was omitted from the deployment settings",configuration
+"The upstream payment provider returned an unexpected failure",dependency_failure
+"Message broker is unavailable to the event consumer",dependency_failure
+"The circuit breaker opened after repeated remote call failures",dependency_failure
+"Cache service connection could not be established",dependency_failure
+"Third party API requests are failing intermittently",dependency_failure
+"Queue consumer cannot reach the configured broker",dependency_failure
+"Remote identity provider did not complete authentication",dependency_failure
+"A required service dependency failed its readiness check",dependency_failure
+"External geocoding provider exceeded its error budget",dependency_failure
+"Cache backend is refusing new client sessions",dependency_failure
+"Event processing is delayed because the broker is unhealthy",dependency_failure
+"Remote service returned errors for repeated dependency calls",dependency_failure
