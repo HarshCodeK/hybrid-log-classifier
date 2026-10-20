@@ -1,76 +1,77 @@
 # Hybrid Log Classifier
 
-A small, runnable log-classification project: **Regex → scikit-learn ML → optional Groq LLM**. A FastAPI endpoint and Streamlit page use the same classifier. Results and classification latency are stored in SQLite.
+A deliberately small, explainable log classifier: Regex → TF-IDF + Logistic Regression → optional Groq LLM. The Streamlit UI and FastAPI endpoint use the same classifier. Results are stored locally in SQLite.
 
-## Requirements
+## Ten alarm categories
 
-- Python 3.11 or newer
-- Internet access and a Groq API key only if you want the LLM fallback
+security, availability, performance, resource_exhaustion, database, network, deployment, data_integrity, configuration, dependency_failure. The result unknown is an abstention, not an eleventh trained category.
+
+## Exactly when each stage runs
+
+1. Regex first: high-precision known signatures are checked in order. A match returns immediately with tier regex; ML and Groq are skipped.
+2. ML second: if no regex matches, a scikit-learn Pipeline trained at startup from data/training.csv uses word/bigram TF-IDF and Logistic Regression. ML is accepted only if the text has terms in the learned vocabulary and the maximum class probability is at least ML_CONFIDENCE_THRESHOLD (default 0.45).
+3. Groq last: if the text has no terms known to the model or ML confidence is below threshold, the app calls Groq only when GROQ_API_KEY is set. The configured model is openai/gpt-oss-20b. If the key is missing or the request fails, the app returns unknown with an explicit tier/reason; it never pretends an LLM ran.
+
+The confidence threshold is a demo routing heuristic, not a measured or calibrated probability guarantee.
 
 ## Windows setup (PowerShell)
 
-Clone the repository, then run these commands from its folder:
+Run from the repository root, the folder containing requirements.txt:
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 Copy-Item .env.example .env
 ```
 
-Open `.env` and optionally add your Groq key to `GROQ_API_KEY=`. You can skip this; Regex and ML still work.
+Open .env and add your Groq key to GROQ_API_KEY= if you want LLM escalation. Get a key at https://console.groq.com/keys. Never commit .env.
 
-## Start the project
-
-Open **two PowerShell terminals** in the project folder. Activate the environment in each terminal.
-
-**Terminal 1 — API**
+## Run the frontend
 
 ```powershell
-.\.venv\Scripts\Activate.ps1
-uvicorn hybrid_log_classifier.api:app --reload
+.\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-**Terminal 2 — Streamlit interface**
+Open the local URL Streamlit prints, usually http://localhost:8501.
+
+## Run the API (optional)
+
+Only needed if you want to demonstrate the API separately; Streamlit does not require it.
 
 ```powershell
-.\.venv\Scripts\Activate.ps1
-streamlit run app.py
+.\.venv\Scripts\python.exe -m uvicorn hybrid_log_classifier.api:app --reload
 ```
 
-Open the Streamlit URL shown in the terminal (usually http://localhost:8501). API docs: http://127.0.0.1:8000/docs.
-
-## Test the API
-
-```powershell
-Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/classify -ContentType "application/json" -Body '{"text":"failed login user=demo"}'
-```
-
-Check health at http://127.0.0.1:8000/health.
-
-## How classification works
-
-1. **Regex:** known, obvious patterns are classified immediately.
-2. **ML:** a small TF-IDF + Logistic Regression model trained from `data/training.csv` handles other log wording.
-3. **Groq:** if ML confidence is below `ML_CONFIDENCE_THRESHOLD`, Groq is tried when `GROQ_API_KEY` is set. If it is not configured or fails, the result is `unknown` rather than a made-up answer.
-
-The training dataset is a small demonstration dataset, not a production-quality model. Classification latency and output are written to `runtime/classifications.db`.
-
-## Troubleshooting
-
-- **`uvicorn is not recognized`:** activate `.venv` and run `python -m uvicorn hybrid_log_classifier.api:app --reload`.
-- **`No module named hybrid_log_classifier`:** run the command from the repository root and confirm `pip install -r requirements.txt` completed.
-- **Port 8000 is already in use:** stop the process using it, or run `python -m uvicorn hybrid_log_classifier.api:app --reload --port 8001`.
-- **Groq errors:** check the key, internet connection, model name, and account limits. The app should still classify with Regex/ML and return `unknown` if it cannot confidently classify.
-- **PowerShell blocks activation:** run `.\.venv\Scripts\python.exe -m pip install -r requirements.txt` and launch using `.\.venv\Scripts\python.exe -m uvicorn hybrid_log_classifier.api:app --reload`; activation is optional.
+API docs: http://127.0.0.1:8000/docs. Health endpoint: http://127.0.0.1:8000/health.
 
 ## Run tests
 
 ```powershell
-python -m pytest
+.\.venv\Scripts\python.exe -m pytest
 ```
 
-## Safety note
+Tests cover the real model and all ten labels, regex routing, ML routing, Groq escalation (mocked so tests spend no API credits), missing-key abstention, and the API smoke path.
 
-Use synthetic or de-identified logs. This demo has no authentication and stores submitted log text in a local SQLite database; do not expose it publicly with sensitive logs.
+## Test prompts and expected route
+
+| Route | Prompt | Expected behavior |
+|---|---|---|
+| Regex → security | Failed login for user=alice from 203.0.113.8 | security / regex |
+| Regex → availability | Health check failed for checkout service | availability / regex |
+| Regex → performance | P95 latency spike exceeded alert limit | performance / regex |
+| Regex → resource | OOMKilled: container exceeded memory limit | resource_exhaustion / regex |
+| Regex → database | Database deadlock detected while committing transaction | database / regex |
+| Regex → network | DNS resolution failed for api.internal | network / regex |
+| Regex → deployment | Rollout failed for payments release | deployment / regex |
+| Regex → integrity | Checksum mismatch detected for stored object | data_integrity / regex |
+| Regex → configuration | Missing environment variable PAYMENT_SECRET | configuration / regex |
+| Regex → dependency | Circuit breaker opened after upstream dependency failures | dependency_failure / regex |
+| ML | The endpoint response time became sluggish during peak traffic | ML should classify performance if confidence clears threshold; no exact regex phrase |
+| ML | The host is exhausting available RAM and swap while requests continue | ML should classify resource exhaustion if confidence clears threshold; no exact regex phrase |
+| LLM | event=QZ991 payload=violet_ternary_oxide trace=7f2a91 | Groq is called when configured; otherwise unknown / llm_not_configured |
+
+## Honest limitations
+
+The CSV contains synthetic labeled examples for demonstration. This proves the model is trained and routing is implemented; it does not establish production accuracy. Evaluate on separate, real, de-identified logs before making accuracy claims. Regex rules require maintenance as log formats change.
+
+Submitted log text is stored in local SQLite. Use synthetic or de-identified logs; this demo has no authentication and should not be exposed publicly with sensitive data.
