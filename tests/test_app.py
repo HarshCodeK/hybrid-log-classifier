@@ -32,8 +32,14 @@ def test_regex_classification_bypasses_ml_and_llm():
 
 
 def test_ml_route_for_unmatched_but_in_vocabulary_text():
-    classifier = LogClassifier(llm_enabled=False)
-    result = classifier.classify("The endpoint response time became sluggish during peak traffic")
+    model = train_model()
+    classifier = LogClassifier(model=model, llm_enabled=False)
+    performance_index = list(model.classes_).index("performance")
+    probabilities = [0.01] * len(CATEGORIES)
+    probabilities[performance_index] = 0.91
+    # Keep this a deterministic routing test; model training is tested separately above.
+    with patch.object(model.named_steps["classifier"], "predict_proba", return_value=[probabilities]):
+        result = classifier.classify("The endpoint response time became sluggish during peak traffic")
     assert result.tier == "ml"
     assert result.category == "performance"
 
