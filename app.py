@@ -20,11 +20,9 @@ def get_classifier() -> LogClassifier:
 
 with st.expander("Routing rules"):
     st.markdown(
-        "- **Regex:** a known high-precision signature matches; classification ends immediately.\n"
-        "- **ML:** no regex matches, the text contains vocabulary learned during training, and the "
-        "TF-IDF + Logistic Regression confidence meets the threshold.\n"
-        "- **LLM:** no useful ML vocabulary or confidence is below the threshold; Groq is called "
-        "only when a key is configured. Otherwise the app abstains as unknown."
+        "- **Regex:** scans all known signatures. If signatures from multiple categories match, it returns all of them.\n"
+        "- **ML:** no regex matches, the text contains learned vocabulary, and the TF-IDF + Logistic Regression top confidence is at least 60%.\n"
+        "- **LLM:** no learned terms or ML top confidence below 60% sends the log to Groq only when a key is configured. Otherwise it returns unknown. The ML confidence is shown in the result reason when below threshold."
     )
     st.write("Categories:", ", ".join(CATEGORIES))
 
@@ -36,7 +34,7 @@ if st.button("Classify log", type="primary"):
         try:
             result = get_classifier().classify(log_text)
             save_result(log_text, result.category, result.tier, result.confidence, result.latency_ms)
-            st.subheader(result.category.upper())
+            st.subheader(" + ".join(result.categories).upper())
             col1, col2, col3 = st.columns(3)
             col1.metric("Selected stage", result.tier)
             col2.metric("Confidence", f"{result.confidence:.1%}")

@@ -46,6 +46,7 @@ class Classification:
     confidence: float
     reason: str
     latency_ms: float
+    categories: tuple[str, ...] = ()
 
 
 def train_model() -> Pipeline:
@@ -67,7 +68,7 @@ def train_model() -> Pipeline:
 class LogClassifier:
     def __init__(self, model: Pipeline | None = None, llm_enabled: bool | None = None):
         self.model = model or train_model()
-        self.threshold = float(os.getenv("ML_CONFIDENCE_THRESHOLD", "0.45"))
+        self.threshold = float(os.getenv("ML_CONFIDENCE_THRESHOLD", "0.60"))
         if not 0 < self.threshold < 1:
             raise ValueError("ML_CONFIDENCE_THRESHOLD must be greater than 0 and less than 1")
         self.api_key = os.getenv("GROQ_API_KEY", "").strip()
@@ -79,9 +80,14 @@ class LogClassifier:
             raise ValueError("Log text cannot be empty.")
         started = time.perf_counter()
 
-        for category, pattern in RULES:
-            if pattern.search(text):
-                return self._result(category, "regex", 1.0, f"Regex rule matched for {category}; ML and LLM were skipped.", started)
+        matched = tuple(category for category, pattern in RULES if pattern.search(text))
+        if matched:
+            categories = tuple(dict.fromkeys(matched))
+            if len(categories) == 1:
+                reason = f"Regex rule matched for {categories[0]}; ML and LLM were skipped."
+            else:
+                reason = "Multiple regex signatures matched; returned all distinct categories: " + ", ".join(categories)
+            return self._result(", ".join(categories), "regex", 1.0, reason, started, categories)
 
         # An all-zero TF-IDF vector means the model has no known terms to reason from.
         features = self.model.named_steps["tfidf"].transform([text])
@@ -104,7 +110,7 @@ class LogClassifier:
         if not has_known_terms:
             reason = "No regex rule matched and the text has no terms in the trained ML vocabulary; Groq is not configured."
         else:
-            reason = f"No regex rule matched and ML confidence ({confidence:.1%}) is below the {self.threshold:.0%} threshold; Groq is not configured."
+            reason = f"No regex rule matched; ML top confidence was {confidence:.1%}, below the {self.threshold:.0%} threshold, so the Groq fallback was not available because no API key is configured."
         return self._result("unknown", "llm_not_configured", confidence, reason, started)
 
     def _classify_with_groq(self, text: str) -> tuple[str, float, str]:
@@ -142,4 +148,5 @@ class LogClassifier:
 
     @staticmethod
     def _result(category: str, tier: str, confidence: float, reason: str, started: float) -> Classification:
-        return Classification(category, tier, round(confidence, 4), reason, round((time.perf_counter() - started) * 1000, 2))
+        categories = (category,) if category != "unknown" else ("unknown",)
+        return Classification(category, tier, round(confidence, 4), reason, round((time.perf_counter() - started) * 1000, 2), categories)

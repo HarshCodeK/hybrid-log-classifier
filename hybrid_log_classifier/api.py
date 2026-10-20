@@ -18,6 +18,7 @@ class ClassifyRequest(BaseModel):
 
 class ClassifyResponse(BaseModel):
     category: str
+    categories: list[str]
     tier: str
     confidence: float
     reason: str
@@ -41,6 +42,7 @@ def classify(request: ClassifyRequest) -> ClassifyResponse:
         save_result(request.text, result.category, result.tier, result.confidence, result.latency_ms)
         return ClassifyResponse(
             category=result.category,
+            categories=list(result.categories),
             tier=result.tier,
             confidence=result.confidence,
             reason=result.reason,
