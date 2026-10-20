@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import os
 import re
 import time
@@ -8,11 +9,13 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import httpx
+from dotenv import load_dotenv
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 
 ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(ROOT / ".env")
 DATA_FILE = ROOT / "data" / "training.csv"
 CATEGORIES = ("security", "performance", "availability", "deployment", "data", "unknown")
 RULES = (
@@ -82,12 +85,11 @@ class LogClassifier:
         return self._result("unknown", "ml_low_confidence", confidence, "ML confidence was below threshold; Groq is not configured.", started)
 
     def _classify_with_groq(self, text: str) -> tuple[str, float, str]:
-        model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
         response = httpx.post(
             "https://api.groq.com/openai/v1/chat/completions",
             headers={"Authorization": f"Bearer {self.api_key}"},
             json={
-                "model": model,
+                "model": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
                 "temperature": 0,
                 "response_format": {"type": "json_object"},
                 "messages": [
@@ -98,9 +100,7 @@ class LogClassifier:
             timeout=8.0,
         )
         response.raise_for_status()
-        payload = response.json()
-        import json
-        result = json.loads(payload["choices"][0]["message"]["content"])
+        result = json.loads(response.json()["choices"][0]["message"]["content"])
         category = result["category"]
         confidence = float(result["confidence"])
         reason = str(result["reason"])[:300]
