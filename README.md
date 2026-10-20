@@ -12,7 +12,7 @@ A small, runnable log-classification project: **Regex → scikit-learn ML → op
 Clone the repository, then run these commands from its folder:
 
 ```powershell
-py -3.11 -m venv .venv
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -r requirements.txt
