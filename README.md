@@ -68,7 +68,7 @@ Tests cover the real model and all ten labels, regex routing, ML routing, Groq e
 | Regex → dependency | Circuit breaker opened after upstream dependency failures | dependency_failure / regex |
 | ML | The endpoint response time became sluggish during peak traffic | ML should classify performance if confidence clears threshold; no exact regex phrase |
 | ML | The host is exhausting available RAM and swap while requests continue | ML should classify resource exhaustion if confidence clears threshold; no exact regex phrase |
-| LLM | event=QZ991 payload=violet_ternary_oxide trace=7f2a91 | Groq is called when configured; otherwise unknown / llm_not_configured |
+| LLM | qzxvblorf=99173 glarfnok_tesselate=0xA9 | Groq is called when configured; otherwise unknown / llm_not_configured |
 
 ## Honest limitations
 
