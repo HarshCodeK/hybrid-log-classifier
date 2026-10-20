@@ -41,7 +41,7 @@ def test_ml_route_for_unmatched_but_in_vocabulary_text():
 def test_low_evidence_without_key_abstains_honestly(monkeypatch):
     monkeypatch.delenv("GROQ_API_KEY", raising=False)
     classifier = LogClassifier(llm_enabled=False)
-    result = classifier.classify("event=QZ991 payload=violet_ternary_oxide trace=7f2a91")
+    result = classifier.classify("qzxvblorf=99173 glarfnok_tesselate=0xA9")
     assert result.category == "unknown"
     assert result.tier == "llm_not_configured"
     assert "not configured" in result.reason
@@ -51,7 +51,7 @@ def test_low_evidence_calls_groq_when_configured(monkeypatch):
     monkeypatch.setenv("GROQ_API_KEY", "test-key")
     classifier = LogClassifier(llm_enabled=True)
     with patch.object(classifier, "_classify_with_groq", return_value=("network", 0.82, "LLM test response")) as groq:
-        result = classifier.classify("event=QZ991 payload=violet_ternary_oxide trace=7f2a91")
+        result = classifier.classify("qzxvblorf=99173 glarfnok_tesselate=0xA9")
     groq.assert_called_once()
     assert result.category == "network"
     assert result.tier == "llm"
@@ -62,7 +62,7 @@ def test_groq_failure_returns_unknown(monkeypatch):
     monkeypatch.setenv("GROQ_API_KEY", "test-key")
     classifier = LogClassifier(llm_enabled=True)
     with patch.object(classifier, "_classify_with_groq", side_effect=ValueError("bad response")):
-        result = classifier.classify("event=QZ991 payload=violet_ternary_oxide trace=7f2a91")
+        result = classifier.classify("qzxvblorf=99173 glarfnok_tesselate=0xA9")
     assert result.category == "unknown"
     assert result.tier == "llm_error"
 
