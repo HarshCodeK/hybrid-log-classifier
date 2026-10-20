@@ -1,54 +1,33 @@
-text,category,template_id
-failed login user=alice,security,sec1
-authentication failure for account bob,security,sec2
-unauthorized access to admin endpoint,security,sec3
-permission denied for user=carol,security,sec4
-invalid credentials for user=dave,security,sec5
-login rejected from client ip,security,sec6
-suspicious access token rejected,security,sec7
-account lockout after repeated attempts,security,sec8
-access policy blocked request,security,sec9
-security token expired,security,sec10
-request latency reached 900ms,performance,perf1
-api response is slow,performance,perf2
-cpu utilization reached 94 percent,performance,perf3
-memory usage reached 91 percent,performance,perf4
-cache hit ratio dropped to 34 percent,performance,perf5
-p95 latency increased sharply,performance,perf6
-worker queue is growing,performance,perf7
-database query duration exceeded limit,performance,perf8
-thread pool is saturated,performance,perf9
-service response time degraded,performance,perf10
-compute pressure is elevated,performance,perf11
-resource pressure is high,performance,perf12
-workers are saturated,performance,perf13
-service unavailable for health check,availability,av1
-connection refused by upstream,availability,av2
-health check failed for checkout,availability,av3
-request timeout from gateway,availability,av4
-backend became unreachable,availability,av5
-readiness probe failed,availability,av6
-upstream endpoint timed out,availability,av7
-service is not responding,availability,av8
-load balancer marked target unhealthy,availability,av9
-node heartbeat missing,availability,av10
-deployment failed for checkout,deployment,dep1
-rollout failed for payments,deployment,dep2
-container restart detected,deployment,dep3
-pod api restarted unexpectedly,deployment,dep4
-release deployment is stuck,deployment,dep5
-new version failed readiness,deployment,dep6
-rollback triggered after failed deploy,deployment,dep7
-orchestrator could not place container,deployment,dep8
-release job failed,deployment,dep9
-pod scheduling failed,deployment,dep10
-constraint violation inserting invoice,data,data1
-duplicate key on transaction id,data,data2
-corrupted record detected,data,data3
-checksum mismatch for object,data,data4
-database row failed validation,data,data5
-invalid schema version in payload,data,data6
-storage record is malformed,data,data7
-integrity check failed for table,data,data8
-conflicting record detected,data,data9
-write rejected by data constraint,data,data10
+text,category
+failed login user=alice,security
+authentication failure for account bob,security
+unauthorized access to admin endpoint,security
+permission denied for user=carol,security
+invalid credentials rejected,security
+suspicious access token rejected,security
+account locked after repeated attempts,security
+api response is slow,performance
+cpu utilization reached 94 percent,performance
+memory usage is high,performance
+p95 latency increased sharply,performance
+worker queue is growing,performance
+database query duration exceeded limit,performance
+thread pool is saturated,performance
+service unavailable for health check,availability
+connection refused by upstream,availability
+health check failed for checkout,availability
+request timeout from gateway,availability
+backend became unreachable,availability
+service is not responding,availability
+deployment failed for checkout,deployment
+rollout failed for payments,deployment
+container restart detected,deployment
+pod restarted unexpectedly,deployment
+release deployment is stuck,deployment
+new version failed readiness,deployment
+duplicate key on transaction id,data
+corrupted record detected,data
+checksum mismatch for object,data
+database row failed validation,data
+invalid schema version in payload,data
+integrity check failed for table,data
