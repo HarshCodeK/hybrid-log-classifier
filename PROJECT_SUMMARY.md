@@ -103,9 +103,9 @@ Open PowerShell in the repository root.
 
 ~~~powershell
 python -m venv .venv
-.\\.venv\\Scripts\\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 Copy-Item .env.example .env
-.\\.venv\\Scripts\\python.exe -m streamlit run app.py
+.\.venv\Scripts\python.exe -m streamlit run app.py
 ~~~
 
 Open the local URL printed by Streamlit, usually http://localhost:8501. Regex and ML work without a Groq key. To enable fallback, edit the local `.env` and set `GROQ_API_KEY=your_key_here`; never commit the real key. `GROQ_MODEL` can select a provider-supported model.
@@ -115,7 +115,7 @@ Open the local URL printed by Streamlit, usually http://localhost:8501. Regex an
 In a second PowerShell terminal, from the repository root:
 
 ~~~powershell
-.\\.venv\\Scripts\\python.exe -m uvicorn hybrid_log_classifier.api:app --reload
+.\.venv\Scripts\python.exe -m uvicorn hybrid_log_classifier.api:app --reload
 ~~~
 
 - Health: http://127.0.0.1:8000/health
@@ -133,8 +133,8 @@ The Streamlit UI does not require Uvicorn to be running.
 ### Run tests
 
 ~~~powershell
-.\\.venv\\Scripts\\python.exe -m compileall -q hybrid_log_classifier app.py tests
-.\\.venv\\Scripts\\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m compileall -q hybrid_log_classifier app.py tests
+.\.venv\Scripts\python.exe -m pytest -q
 ~~~
 
 GitHub Actions performs the same basic compilation and test steps. Tests mock Groq interactions where appropriate, so a real API key and provider credits should not be needed for the test suite.
