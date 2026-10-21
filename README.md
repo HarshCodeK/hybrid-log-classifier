@@ -106,13 +106,22 @@ The tests cover each regex category, multi-issue routing, real model training, M
 
 ## Main files
 
-- hybrid_log_classifier/classifier.py — regex signatures, model training, routing, and Groq fallback.
-- data/training.csv — labeled training examples.
-- app.py — Streamlit interface.
-- hybrid_log_classifier/api.py — optional REST API.
-- hybrid_log_classifier/persistence.py — SQLite writes.
-- tests/test_app.py — automated tests.
+- `hybrid_log_classifier/classifier.py` — regex signatures, model training, routing, confidence threshold, and Groq fallback.
+- `data/training.csv` — synthetic labeled training examples; not a real production-log corpus.
+- `app.py` — Streamlit interface and result display.
+- `hybrid_log_classifier/api.py` — optional FastAPI REST API (`/health` and `/classify`).
+- `hybrid_log_classifier/persistence.py` — SQLite table creation and classification-history writes.
+- `tests/test_app.py` — automated regression tests for routing, model behavior, API validation, fallback, and persistence.
+- `requirements.txt` — runtime/test dependencies.
+- `.env.example` — documented configuration placeholders; it must not contain real secrets.
+- `.github/workflows/ci.yml` — compile and pytest checks on pushes and pull requests targeting `main`.
+- `PROMPT.md` — repository-specific AI coding prompt.
 
-## Project assistant prompt
+## Full project summary and AI coding prompt
 
-PROMPT.md contains a short prompt for an AI coding assistant to inspect the code first, explain actual behavior, make small tested changes, and avoid claiming features or results that are not implemented.
+- **[Complete project summary](PROJECT_SUMMARY.md)** — architecture, every important current-main file, model/data provenance, run commands, configuration, tests, limitations, interview explanation, and a record of additional engineering work.
+- **[AI coding prompt (`PROMPT.md`)](PROMPT.md)** — located in the repository root. The filename is uppercase; open it directly from the link. It tells an AI coding assistant to inspect code and tests first, make small tested changes, protect secrets, and avoid inventing behavior or results.
+
+## Important note about the repository's branch history
+
+GitHub records PRs [#4](https://github.com/HarshCodeK/hybrid-log-classifier/pull/4) (reliability/load-test work) and [#5](https://github.com/HarshCodeK/hybrid-log-classifier/pull/5) (bounded incident-triage workflow) as merged. However, the current `main` tree was subsequently simplified and no longer contains several of those features or files. The richer snapshots remain on [`reliability-final`](https://github.com/HarshCodeK/hybrid-log-classifier/tree/reliability-final) and [`agentic-incident-triage`](https://github.com/HarshCodeK/hybrid-log-classifier/tree/agentic-incident-triage). Therefore, features such as `/triage`, `/metrics`, `/ready`, load-test scripts, Docker deployment, and the added reliability controls are **not part of the current `main` snapshot**. See `PROJECT_SUMMARY.md` for the precise distinction. Do not claim those features are currently runnable from `main` until they are re-integrated and retested.
